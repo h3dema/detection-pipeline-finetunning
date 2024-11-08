@@ -29,6 +29,7 @@ from utils.general import set_infer_dir
 from utils.transforms import resize
 from utils.logging import LogJSON
 
+
 def collect_all_images(dir_test):
     """
     Function to return a list of image paths.
@@ -45,134 +46,136 @@ def collect_all_images(dir_test):
             test_images.extend(glob.glob(f"{dir_test}/{file_type}"))
     else:
         test_images.append(dir_test)
-    return test_images    
+    return test_images
+
 
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-i', 
-        '--input', 
+        '-i',
+        '--input',
         help='folder path to input image (one image or a folder path)'
     )
     parser.add_argument(
-        '-o', 
-        '--output', 
-        default=None, 
+        '-o',
+        '--output',
+        default=None,
         help='folder path to output data'
     )
     parser.add_argument(
-        '--data', 
-        default=None, 
+        '--data',
+        default=None,
         help='(optional) path to the data config file'
     )
     parser.add_argument(
-        '-m', 
-        '--model', 
-        default=None, 
+        '-m',
+        '--model',
+        default=None,
         help='name of the model'
     )
     parser.add_argument(
-        '-w', 
-        '--weights', 
-        default=None, 
+        '-w',
+        '--weights',
+        default=None,
         help='path to trained checkpoint weights if providing custom YAML file'
     )
     parser.add_argument(
-        '-th', 
-        '--threshold', 
-        default=0.3, 
-        type=float, 
+        '-th',
+        '--threshold',
+        default=0.3,
+        type=float,
         help='detection threshold'
     )
     parser.add_argument(
-        '-si', 
-        '--show', 
-        action='store_true', 
+        '-si',
+        '--show',
+        action='store_true',
         help='visualize output only if this argument is passed'
     )
     parser.add_argument(
-        '-mpl', 
-        '--mpl-show', 
-        dest='mpl_show', 
-        action='store_true', 
+        '-mpl',
+        '--mpl-show',
+        dest='mpl_show',
+        action='store_true',
         help='visualize using matplotlib, helpful in notebooks'
     )
     parser.add_argument(
-        '-d', 
-        '--device', 
-        default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'), 
+        '-d',
+        '--device',
+        default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         help='computation/training device, default is GPU if GPU present'
     )
     parser.add_argument(
-        '-ims', 
-        '--imgsz', 
-        default=None, 
-        type=int, 
+        '-ims',
+        '--imgsz',
+        default=None,
+        type=int,
         help='resize image to, by default use the original frame/image size'
     )
     parser.add_argument(
-        '-nlb', 
-        '--no-labels', 
-        dest='no_labels', 
-        action='store_true', 
+        '-nlb',
+        '--no-labels',
+        dest='no_labels',
+        action='store_true',
         help='do not show labels on top of bounding boxes'
     )
     parser.add_argument(
-        '--square-img', 
-        dest='square_img', 
-        action='store_true', 
+        '--square-img',
+        dest='square_img',
+        action='store_true',
         help='whether to use square image resize, else use aspect ratio resize'
     )
     parser.add_argument(
-        '--classes', 
-        nargs='+', 
-        type=int, 
-        default=None, 
+        '--classes',
+        nargs='+',
+        type=int,
+        default=None,
         help='filter classes by visualization, --classes 1 2 3'
     )
     parser.add_argument(
-        '--track', 
+        '--track',
         action='store_true'
     )
     parser.add_argument(
-        '--log-json', 
-        dest='log_json', 
-        action='store_true', 
+        '--log-json',
+        dest='log_json',
+        action='store_true',
         help='store a json log file in COCO format in the output directory'
     )
     parser.add_argument(
-        '-t', 
-        '--table', 
-        dest='table', 
-        action='store_true', 
+        '-t',
+        '--table',
+        dest='table',
+        action='store_true',
         help='outputs a csv file with a table summarizing the predicted boxes'
     )
     parser.add_argument(
-        '--slice-height', 
-        type=int, 
-        default=512, 
+        '--slice-height',
+        type=int,
+        default=512,
         help='slice height for SAHI'
     )
     parser.add_argument(
-        '--slice-width', 
-        type=int, 
-        default=512, 
+        '--slice-width',
+        type=int,
+        default=512,
         help='slice width for SAHI'
     )
     parser.add_argument(
-        '--overlap-height-ratio', 
-        type=float, 
-        default=0.2, 
+        '--overlap-height-ratio',
+        type=float,
+        default=0.2,
         help='overlap height ratio for SAHI'
     )
     parser.add_argument(
-        '--overlap-width-ratio', 
-        type=float, 
-        default=0.2, 
+        '--overlap-width-ratio',
+        type=float,
+        default=0.2,
         help='overlap width ratio for SAHI'
     )
     args = vars(parser.parse_args())
     return args
+
 
 def main(args):
     np.random.seed(42)
@@ -191,7 +194,7 @@ def main(args):
 
     if args['weights'] is None:
         if data_configs is None:
-            with open(os.path.join('data_configs', 'test_image_config.yaml')) as file:
+            with open(os.path.join('configs', 'test_image_config.yaml')) as file:
                 data_configs = yaml.safe_load(file)
             NUM_CLASSES = data_configs['NC']
             CLASSES = data_configs['CLASSES']
@@ -274,12 +277,12 @@ def main(args):
         if len(boxes) > 0:
             draw_boxes = np.array(boxes)
             orig_image = inference_annotations(
-                draw_boxes, 
-                pred_classes, 
+                draw_boxes,
+                pred_classes,
                 scores,
                 CLASSES,
-                COLORS, 
-                orig_image, 
+                COLORS,
+                orig_image,
                 resize(orig_image, RESIZE_TO, square=args['square_img']),
                 args
             )
@@ -307,7 +310,7 @@ def main(args):
                         "width": width,
                         "height": height,
                         "area": width * height
-                    }                    
+                    }
                     box_id += 1
 
             if args['log_json']:
@@ -315,7 +318,7 @@ def main(args):
 
         cv2.imwrite(f"{OUT_DIR}/{image_name}.jpg", orig_image)
         print(f"Image {i+1} done...")
-        print('-'*50)
+        print('-' * 50)
 
     print('TEST PREDICTIONS COMPLETE')
     cv2.destroyAllWindows()
@@ -327,10 +330,11 @@ def main(args):
         df = pandas.DataFrame.from_dict(pred_boxes, orient='index')
         df = df.fillna(0)
         df.to_csv(f"{OUT_DIR}/boxes.csv", index=False)
-        
+
     avg_fps = total_fps / frame_count
     print(f"Average FPS: {avg_fps:.3f}")
-    print('Path to output files: '+OUT_DIR)
+    print('Path to output files: ' + OUT_DIR)
+
 
 if __name__ == '__main__':
     args = parse_opt()

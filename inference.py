@@ -18,6 +18,7 @@ from utils.general import set_infer_dir
 from utils.transforms import infer_transforms, resize
 from utils.logging import LogJSON
 
+
 def collect_all_images(dir_test):
     """
     Function to return a list of image paths.
@@ -34,59 +35,60 @@ def collect_all_images(dir_test):
             test_images.extend(glob.glob(f"{dir_test}/{file_type}"))
     else:
         test_images.append(dir_test)
-    return test_images    
+    return test_images
+
 
 def parse_opt():
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-i', '--input', 
+        '-i', '--input',
         help='folder path to input input image (one image or a folder path)',
     )
     parser.add_argument(
         '-o', '--output',
-        default=None, 
+        default=None,
         help='folder path to output data',
     )
     parser.add_argument(
-        '--data', 
+        '--data',
         default=None,
         help='(optional) path to the data config file'
     )
     parser.add_argument(
-        '-m', '--model', 
+        '-m', '--model',
         default=None,
         help='name of the model'
     )
     parser.add_argument(
-        '-w', '--weights', 
+        '-w', '--weights',
         default=None,
         help='path to trained checkpoint weights if providing custom YAML file'
     )
     parser.add_argument(
-        '-th', '--threshold', 
-        default=0.3, 
+        '-th', '--threshold',
+        default=0.3,
         type=float,
         help='detection threshold'
     )
     parser.add_argument(
-        '-si', '--show',  
+        '-si', '--show',
         action='store_true',
         help='visualize output only if this argument is passed'
     )
     parser.add_argument(
-        '-mpl', '--mpl-show', 
-        dest='mpl_show', 
+        '-mpl', '--mpl-show',
+        dest='mpl_show',
         action='store_true',
         help='visualize using matplotlib, helpful in notebooks'
     )
     parser.add_argument(
-        '-d', '--device', 
+        '-d', '--device',
         default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         help='computation/training device, default is GPU if GPU present'
     )
     parser.add_argument(
-        '-ims', '--imgsz', 
+        '-ims', '--imgsz',
         default=None,
         type=int,
         help='resize image to, by default use the original frame/image size'
@@ -121,13 +123,14 @@ def parse_opt():
         help='store a json log file in COCO format in the output directory'
     )
     parser.add_argument(
-        '-t', '--table', 
-        dest='table', 
+        '-t', '--table',
+        dest='table',
         action='store_true',
         help='outputs a csv file with a table summarizing the predicted boxes'
     )
     args = vars(parser.parse_args())
     return args
+
 
 def main(args):
     # For same annotation colors each time.
@@ -147,14 +150,14 @@ def main(args):
         if not os.path.exists(OUT_DIR):
             os.makedirs(OUT_DIR)
     else:
-        OUT_DIR=set_infer_dir() 
+        OUT_DIR = set_infer_dir()
 
     # Load the pretrained model
     if args['weights'] is None:
-        # If the config file is still None, 
+        # If the config file is still None,
         # then load the default one for COCO.
         if data_configs is None:
-            with open(os.path.join('data_configs', 'test_image_config.yaml')) as file:
+            with open(os.path.join('configs', 'test_image_config.yaml')) as file:
                 data_configs = yaml.safe_load(file)
             NUM_CLASSES = data_configs['NC']
             CLASSES = data_configs['CLASSES']
@@ -194,7 +197,7 @@ def main(args):
     # score below this will be discarded.
     detection_threshold = args['threshold']
 
-    # Define dictionary to collect boxes detected in each file 
+    # Define dictionary to collect boxes detected in each file
     pred_boxes = {}
     box_id = 1
 
@@ -244,12 +247,12 @@ def main(args):
                 outputs, detection_threshold, CLASSES, args
             )
             orig_image = inference_annotations(
-                draw_boxes, 
-                pred_classes, 
+                draw_boxes,
+                pred_classes,
                 scores,
                 CLASSES,
-                COLORS, 
-                orig_image, 
+                COLORS,
+                orig_image,
                 image_resized,
                 args
             )
@@ -278,7 +281,7 @@ def main(args):
                         "width": width,
                         "height": height,
                         "area": width * height
-                    }                    
+                    }
                     box_id = box_id + 1
 
                 df = pandas.DataFrame.from_dict(pred_boxes, orient='index')
@@ -290,7 +293,7 @@ def main(args):
 
         cv2.imwrite(f"{OUT_DIR}/{image_name}.jpg", orig_image)
         print(f"Image {i+1} done...")
-        print('-'*50)
+        print('-' * 50)
 
     print('TEST PREDICTIONS COMPLETE')
     cv2.destroyAllWindows()
@@ -298,11 +301,12 @@ def main(args):
     # Save JSON log file.
     if args['log_json']:
         log_json.save(os.path.join(OUT_DIR, 'log.json'))
-        
+
     # Calculate and print the average FPS.
     avg_fps = total_fps / frame_count
     print(f"Average FPS: {avg_fps:.3f}")
-    print('Path to output files: '+OUT_DIR)
+    print('Path to output files: ' + OUT_DIR)
+
 
 if __name__ == '__main__':
     args = parse_opt()

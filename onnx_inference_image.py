@@ -3,7 +3,7 @@ Script to run inference on images using ONNX models.
 `--input` can take the path either an image or a directory containing images.
 
 USAGE:
-python onnx_inference_image.py --input ../inference_data/ --weights weights/fasterrcnn_resnet18.onnx --data data_configs/voc.yaml --show --imgsz 640
+python onnx_inference_image.py --input ../inference_data/ --weights weights/fasterrcnn_resnet18.onnx --data configs/voc.yaml --show --imgsz 640
 """
 
 import torch
@@ -24,6 +24,7 @@ from utils.annotations import (
 )
 from utils.logging import LogJSON
 
+
 def collect_all_images(dir_test):
     """
     Function to return a list of image paths.
@@ -42,45 +43,47 @@ def collect_all_images(dir_test):
         test_images.append(dir_test)
     return test_images
 
+
 def to_numpy(tensor):
-        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
 
 def parse_opt():
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-i', '--input', 
+        '-i', '--input',
         help='folder path to input input image (one image or a folder path)',
     )
     parser.add_argument(
-        '--data', 
+        '--data',
         default=None,
         help='path to the data config file'
     )
     parser.add_argument(
-        '-w', '--weights', 
+        '-w', '--weights',
         default=None,
         help='path to trained checkpoint weights if providing custom YAML file'
     )
     parser.add_argument(
-        '-th', '--threshold', 
-        default=0.3, 
+        '-th', '--threshold',
+        default=0.3,
         type=float,
         help='detection threshold'
     )
     parser.add_argument(
-        '-si', '--show',  
+        '-si', '--show',
         action='store_true',
         help='visualize output only if this argument is passed'
     )
     parser.add_argument(
-        '-mpl', '--mpl-show', 
-        dest='mpl_show', 
+        '-mpl', '--mpl-show',
+        dest='mpl_show',
         action='store_true',
         help='visualize using matplotlib, helpful in notebooks'
     )
     parser.add_argument(
-        '-ims', '--imgsz', 
+        '-ims', '--imgsz',
         default=640,
         type=int,
         help='resize image to, by default use the original frame/image size'
@@ -110,6 +113,7 @@ def parse_opt():
     )
     args = vars(parser.parse_args())
     return args
+
 
 def main(args):
     np.random.seed(42)
@@ -188,12 +192,12 @@ def main(args):
                 outputs, detection_threshold, CLASSES, args
             )
             orig_image = inference_annotations(
-                draw_boxes, 
-                pred_classes, 
+                draw_boxes,
+                pred_classes,
                 scores,
                 CLASSES,
-                COLORS, 
-                orig_image, 
+                COLORS,
+                orig_image,
                 image_resized,
                 args
             )
@@ -206,7 +210,7 @@ def main(args):
                 plt.show()
         cv2.imwrite(f"{OUT_DIR}/{image_name}.jpg", orig_image)
         print(f"Image {i+1} done...")
-        print('-'*50)
+        print('-' * 50)
 
     print('TEST PREDICTIONS COMPLETE')
     cv2.destroyAllWindows()
@@ -218,6 +222,7 @@ def main(args):
     # Calculate and print the average FPS.
     avg_fps = total_fps / frame_count
     print(f"Average FPS: {avg_fps:.3f}")
+
 
 if __name__ == '__main__':
     args = parse_opt()

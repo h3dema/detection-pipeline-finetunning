@@ -12,8 +12,8 @@ import pandas
 from models.create_fasterrcnn_model import create_model
 from utils.general import set_infer_dir
 from utils.annotations import (
-    inference_annotations, 
-    annotate_fps, 
+    inference_annotations,
+    annotate_fps,
     convert_detections,
     convert_pre_track,
     convert_post_track
@@ -23,65 +23,67 @@ from torchvision import transforms as transforms
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from utils.logging import LogJSON
 
+
 def read_return_video_data(video_path):
     cap = cv2.VideoCapture(video_path)
     # Get the video's frame width and height
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
-    assert (frame_width != 0 and frame_height !=0), 'Please check video path...'
+    assert (frame_width != 0 and frame_height != 0), 'Please check video path...'
     return cap, frame_width, frame_height
+
 
 def parse_opt():
         # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-i', '--input', 
+        '-i', '--input',
         help='path to input video',
     )
     parser.add_argument(
         '-o', '--output',
-        default=None, 
+        default=None,
         help='folder path to output data',
     )
     parser.add_argument(
-        '--data', 
+        '--data',
         default=None,
         help='(optional) path to the data config file'
     )
     parser.add_argument(
-        '-m', '--model', 
+        '-m', '--model',
         default=None,
         help='name of the model'
     )
     parser.add_argument(
-        '-w', '--weights', 
+        '-w', '--weights',
         default=None,
         help='path to trained checkpoint weights if providing custom YAML file'
     )
     parser.add_argument(
-        '-th', '--threshold', 
-        default=0.3, 
+        '-th', '--threshold',
+        default=0.3,
         type=float,
         help='detection threshold'
     )
     parser.add_argument(
-        '-si', '--show',  
+        '-si', '--show',
         action='store_true',
         help='visualize output only if this argument is passed'
     )
     parser.add_argument(
-        '-mpl', '--mpl-show', 
-        dest='mpl_show', 
+        '-mpl', '--mpl-show',
+        dest='mpl_show',
         action='store_true',
         help='visualize using matplotlib, helpful in notebooks'
     )
     parser.add_argument(
-        '-d', '--device', 
+        '-d', '--device',
         default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         help='computation/training device, default is GPU if GPU present'
     )
     parser.add_argument(
-        '-ims', '--imgsz', 
+        '-ims', '--imgsz',
         default=None,
         type=int,
         help='resize image to, by default use the original frame/image size'
@@ -118,11 +120,12 @@ def parse_opt():
     args = vars(parser.parse_args())
     return args
 
+
 def main(args):
     # For same annotation colors each time.
     np.random.seed(42)
 
-    if args['track']: # Initialize Deep SORT tracker if tracker is selected.
+    if args['track']:  # Initialize Deep SORT tracker if tracker is selected.
         tracker = DeepSort(max_age=30)
 
     # Load the data configurations.
@@ -132,7 +135,7 @@ def main(args):
             data_configs = yaml.safe_load(file)
         NUM_CLASSES = data_configs['NC']
         CLASSES = data_configs['CLASSES']
-        
+
     DEVICE = args['device']
 
     if args['output'] is not None:
@@ -140,16 +143,16 @@ def main(args):
         if not os.path.exists(OUT_DIR):
             os.makedirs(OUT_DIR)
     else:
-        OUT_DIR=set_infer_dir()
+        OUT_DIR = set_infer_dir()
 
     VIDEO_PATH = None
 
     # Load the pretrained model
     if args['weights'] is None:
-        # If the config file is still None, 
+        # If the config file is still None,
         # then load the default one for COCO.
         if data_configs is None:
-            with open(os.path.join('data_configs', 'test_video_config.yaml')) as file:
+            with open(os.path.join('configs', 'test_video_config.yaml')) as file:
                 data_configs = yaml.safe_load(file)
             NUM_CLASSES = data_configs['NC']
             CLASSES = data_configs['CLASSES']
@@ -191,9 +194,9 @@ def main(args):
 
     save_name = VIDEO_PATH.split(os.path.sep)[-1].split('.')[0]
     # Define codec and create VideoWriter object.
-    out = cv2.VideoWriter(f"{OUT_DIR}/{save_name}.mp4", 
-                        cv2.VideoWriter_fourcc(*'mp4v'), 30, 
-                        (frame_width, frame_height))
+    out = cv2.VideoWriter(f"{OUT_DIR}/{save_name}.mp4",
+                          cv2.VideoWriter_fourcc(*'mp4v'), 30,
+                          (frame_width, frame_height))
     if args['imgsz'] != None:
         RESIZE_TO = args['imgsz']
     else:
@@ -202,8 +205,8 @@ def main(args):
     if args['log_json']:
         log_json = LogJSON(os.path.join(OUT_DIR, 'log.json'))
 
-    frame_count = 0 # To count total frames.
-    total_fps = 0 # To get the final frames per second.
+    frame_count = 0  # To count total frames.
+    total_fps = 0  # To get the final frames per second.
 
     # read until end of video
     while(cap.isOpened()):
@@ -225,17 +228,17 @@ def main(args):
             forward_end_time = time.time()
 
             forward_pass_time = forward_end_time - start_time
-            
+
             # Get the current fps.
             fps = 1 / (forward_pass_time)
             # Add `fps` to `total_fps`.
             total_fps += fps
             # Increment frame count.
             frame_count += 1
-            
+
             # Load all detection to CPU for further operations.
             outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
-                
+
             # Carry further only if there are detected boxes.
             if len(outputs[0]['boxes']) != 0:
                 draw_boxes, pred_classes, scores, labels = convert_detections(
@@ -247,14 +250,14 @@ def main(args):
                     )
                     # Update tracker with detections.
                     tracks = tracker.update_tracks(tracker_inputs, frame=frame)
-                    draw_boxes, pred_classes, scores = convert_post_track(tracks) 
+                    draw_boxes, pred_classes, scores = convert_post_track(tracks)
                 frame = inference_annotations(
-                    draw_boxes, 
-                    pred_classes, 
+                    draw_boxes,
+                    pred_classes,
                     scores,
-                    CLASSES, 
-                    COLORS, 
-                    orig_frame, 
+                    CLASSES,
+                    COLORS,
+                    orig_frame,
                     frame,
                     args
                 )
@@ -271,7 +274,7 @@ def main(args):
             print_string = f"Frame: {frame_count}, Forward pass FPS: {fps:.3f}, "
             print_string += f"Forward pass time: {forward_pass_time:.3f} seconds, "
             print_string += f"Forward pass + annotation time: {forward_and_annot_time:.3f} seconds"
-            print(print_string)            
+            print(print_string)
             out.write(frame)
 
             if args['show']:
@@ -293,7 +296,8 @@ def main(args):
     # Calculate and print the average FPS.
     avg_fps = total_fps / frame_count
     print(f"Average FPS: {avg_fps:.3f}")
-    print('Path to output files: '+OUT_DIR)
+    print('Path to output files: ' + OUT_DIR)
+
 
 if __name__ == '__main__':
     args = parse_opt()

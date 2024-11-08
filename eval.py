@@ -2,7 +2,7 @@
 Run evaluation on a trained model to get mAP and class wise AP.
 
 USAGE:
-python eval.py --data data_configs/voc.yaml --weights outputs/training/fasterrcnn_convnext_small_voc_15e_noaug/best_model.pth --model fasterrcnn_convnext_small
+python eval.py --data configs/voc.yaml --weights outputs/training/fasterrcnn_convnext_small_voc_15e_noaug/best_model.pth --model fasterrcnn_convnext_small
 """
 from datasets import (
     create_valid_dataset, create_valid_loader
@@ -26,24 +26,24 @@ if __name__ == '__main__':
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--data', 
+        '--data',
         default='data_configs/test_image_config.yaml',
         help='(optional) path to the data config file'
     )
     parser.add_argument(
-        '-m', '--model', 
+        '-m', '--model',
         default='fasterrcnn_resnet50_fpn',
         help='name of the model'
     )
     parser.add_argument(
-        '-mw', '--weights', 
+        '-mw', '--weights',
         default=None,
         help='path to trained checkpoint weights if providing custom YAML file'
     )
     parser.add_argument(
-        '-ims', '--imgsz', 
-        default=640, 
-        type=int, 
+        '-ims', '--imgsz',
+        default=640,
+        type=int,
         help='image size to feed to the network'
     )
     parser.add_argument(
@@ -51,13 +51,13 @@ if __name__ == '__main__':
         help='number of workers for data processing/transforms/augmentations'
     )
     parser.add_argument(
-        '-b', '--batch', 
-        default=8, 
-        type=int, 
+        '-b', '--batch',
+        default=8,
+        type=int,
         help='batch size to load the data'
     )
     parser.add_argument(
-        '-d', '--device', 
+        '-d', '--device',
         default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         help='computation/training device, default is GPU if GPU present'
     )
@@ -107,10 +107,10 @@ if __name__ == '__main__':
         if coco_model:
             COCO_91_CLASSES = data_configs['COCO_91_CLASSES']
             valid_dataset = create_valid_dataset(
-                VALID_DIR_IMAGES, 
-                VALID_DIR_LABELS, 
-                IMAGE_SIZE, 
-                COCO_91_CLASSES, 
+                VALID_DIR_IMAGES,
+                VALID_DIR_LABELS,
+                IMAGE_SIZE,
+                COCO_91_CLASSES,
                 square_training=args['square_training']
             )
 
@@ -120,21 +120,21 @@ if __name__ == '__main__':
         checkpoint = torch.load(args['weights'], map_location=DEVICE)
         model.load_state_dict(checkpoint['model_state_dict'])
         valid_dataset = create_valid_dataset(
-            VALID_DIR_IMAGES, 
-            VALID_DIR_LABELS, 
-            IMAGE_SIZE, 
+            VALID_DIR_IMAGES,
+            VALID_DIR_LABELS,
+            IMAGE_SIZE,
             CLASSES,
             square_training=args['square_training']
         )
     model.to(DEVICE).eval()
-    
+
     valid_loader = create_valid_loader(valid_dataset, BATCH_SIZE, NUM_WORKERS)
 
     @torch.inference_mode()
     def evaluate(
-        model, 
-        data_loader, 
-        device, 
+        model,
+        data_loader,
+        device,
         out_dir=None,
         classes=None,
         colors=None
@@ -183,8 +183,8 @@ if __name__ == '__main__':
         return metric_summary
 
     stats = evaluate(
-        model, 
-        valid_loader, 
+        model,
+        valid_loader,
         device=DEVICE,
         classes=CLASSES,
     )
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         print('\n')
         print('AP / AR per class')
         empty_string = ''
-        if len(CLASSES) > 2: 
+        if len(CLASSES) > 2:
             num_hyphens = 73
             print('-'*num_hyphens)
             print(f"|    | Class{empty_string:<16}| AP{empty_string:<18}| AR{empty_string:<18}|")

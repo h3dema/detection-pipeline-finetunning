@@ -12,12 +12,13 @@ import torch
 import argparse
 import yaml
 
+
 if __name__ == '__main__':
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-c', '--config', 
-        default='data_configs/test_image_config.yaml',
+        '-c', '--config',
+        default='configs/test_image_config.yaml',
         help='(optional) path to the data config file'
     )
     parser.add_argument(
@@ -29,7 +30,7 @@ if __name__ == '__main__':
         help='path to trained checkpoint weights if providing custom YAML file'
     )
     parser.add_argument(
-        '-ims', '--img-size', dest='img_size', default=512, type=int, 
+        '-ims', '--img-size', dest='img_size', default=512, type=int,
         help='image size to feed to the network'
     )
     parser.add_argument(
@@ -37,11 +38,11 @@ if __name__ == '__main__':
         help='number of workers for data processing/transforms/augmentations'
     )
     parser.add_argument(
-        '-b', '--batch-size', dest='batch_size', default=8, type=int, 
+        '-b', '--batch-size', dest='batch_size', default=8, type=int,
         help='batch size to load the data'
     )
     parser.add_argument(
-        '-d', '--device', 
+        '-d', '--device',
         default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         help='computation/training device, default is GPU if GPU present'
     )
@@ -52,10 +53,10 @@ if __name__ == '__main__':
         data_configs = yaml.safe_load(file)
 
     # Validation settings and constants.
-    try: # Use test images if present.
+    try:  # Use test images if present.
         VALID_DIR_IMAGES = data_configs['TEST_DIR_IMAGES']
         VALID_DIR_LABELS = data_configs['TEST_DIR_LABELS']
-    except: # Else use the validation images.
+    except:  # Else use the validation images.
         VALID_DIR_IMAGES = data_configs['VALID_DIR_IMAGES']
         VALID_DIR_LABELS = data_configs['VALID_DIR_LABELS']
     NUM_CLASSES = data_configs['NC']
@@ -79,17 +80,17 @@ if __name__ == '__main__':
     IMAGE_WIDTH = args['img_size']
     IMAGE_HEIGHT = args['img_size']
     valid_dataset = create_valid_dataset(
-            VALID_DIR_IMAGES, 
-            VALID_DIR_LABELS, 
-            args['img_size'],
-            CLASSES,
-            square_training=True
-        )
+        VALID_DIR_IMAGES,
+        VALID_DIR_LABELS,
+        args['img_size'],
+        CLASSES,
+        square_training=True
+    )
     valid_loader = create_valid_loader(valid_dataset, BATCH_SIZE, NUM_WORKERS)
 
     coco_evaluator, stats = evaluate(
-            model, 
-            valid_loader, 
-            device=DEVICE,
-            # classes=CLASSES,
+        model,
+        valid_loader,
+        device=DEVICE,
+        # classes=CLASSES,
     )
