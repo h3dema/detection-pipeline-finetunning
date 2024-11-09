@@ -116,7 +116,7 @@ Train PyTorch FasterRCNN models easily on any custom dataset. Choose between off
 
 ## Train on Custom Dataset
 
-Taking an exmaple of the [smoke dataset](https://www.kaggle.com/didiruh/smoke-pascal-voc) from Kaggle. Let's say that the dataset is in the `data/smoke_pascal_voc` directory in the following format. And the `smoke.yaml` is in the `data_configs` directory. Assuming, we store the smoke data in the `data` directory
+Taking an exmaple of the [smoke dataset](https://www.kaggle.com/didiruh/smoke-pascal-voc) from Kaggle. Let's say that the dataset is in the `data/smoke_pascal_voc` directory in the following format. And the `smoke.yaml` is in the `configs` directory. Assuming, we store the smoke data in the `data` directory
 
 ```bash
 ├── data
@@ -125,7 +125,7 @@ Taking an exmaple of the [smoke dataset](https://www.kaggle.com/didiruh/smoke-pa
 │   │   │   ├── train
 │   │   │   └── valid
 │   └── README.md
-├── data_configs
+├── configs
 │   └── smoke.yaml
 ├── models
 │   ├── create_fasterrcnn_model.py
@@ -188,7 +188,7 @@ python train.py --data <path to the data config YAML file> --epochs 100 --model 
 **In this case, the exact command would be:**
 
 ```bash
-python train.py --data data_configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
+python train.py --data configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
 ```
 
 **The terimal output should be similar to the following:**
@@ -259,7 +259,7 @@ SAVING PLOTS COMPLETE...
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1
-python -m torch.distributed.launch --nproc_per_node=2 --use_env train.py --data data_configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
+python -m torch.distributed.launch --nproc_per_node=2 --use_env train.py --data configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
 ```
 
 ## Inference
@@ -307,10 +307,10 @@ python inference_video.py --track --model fasterrcnn_resnet50_fpn_v2 --show
 # Track all COCO classes (Faster RCNN ResNet50 FPN V2) using own video.
 python inference_video.py --track --model fasterrcnn_resnet50_fpn_v2 --show --input ../inference_data/video_1.mp4
 
-# Tracking only person class (index 1 in COCO pretrained). Check `COCO_91_CLASSES` attribute in `data_configs/coco.yaml` for more information.
+# Tracking only person class (index 1 in COCO pretrained). Check `COCO_91_CLASSES` attribute in `configs/coco.yaml` for more information.
 python inference_video.py --track --model fasterrcnn_resnet50_fpn_v2 --show --input ../inference_data/video_4.mp4 --classes 1
 
-# Tracking only person and car classes (indices 1 and 3 in COCO pretrained). Check `COCO_91_CLASSES` attribute in `data_configs/coco.yaml` for more information.
+# Tracking only person and car classes (indices 1 and 3 in COCO pretrained). Check `COCO_91_CLASSES` attribute in `configs/coco.yaml` for more information.
 python inference_video.py --track --model fasterrcnn_resnet50_fpn_v2 --show --input ../inference_data/video_4.mp4 --classes 1 3
 
 # Tracking using custom trained weights. Just provide the path to the weights instead of model name.
@@ -322,22 +322,22 @@ python inference_video.py --track --weights outputs/training/fish_det/best_model
 Replace the required arguments according to your need.
 
 ```bash
-python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data data_configs/aquarium.yaml --batch 4
+python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data configs/aquarium.yaml --batch 4
 ```
 
 You can use the following command to show a table for **class-wise Average Precision** (`--verbose` additionally needed).
 
 ```bash
-python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data data_configs/aquarium.yaml --batch 4 --verbose
+python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data configs/aquarium.yaml --batch 4 --verbose
 ```
 
 ## A List of All Model Flags to Use With the Training Script
 
-The following command expects the `coco` dataset to be present one directory back inside the `input` folder in XML format. You can find the dataset [here on Kaggle](https://www.kaggle.com/datasets/sovitrath/coco-xml-format). Check the `data_configs/coco.yaml` for more details. You can change the relative dataset path in the YAML file according to your structure.
+The following command expects the `coco` dataset to be present one directory back inside the `input` folder in XML format. You can find the dataset [here on Kaggle](https://www.kaggle.com/datasets/sovitrath/coco-xml-format). Check the `configs/coco.yaml` for more details. You can change the relative dataset path in the YAML file according to your structure.
 
 ```bash
 # Usage 
-python train.py --model fasterrcnn_resnet50_fpn_v2 --data data_configs/coco.yaml
+python train.py --model fasterrcnn_resnet50_fpn_v2 --data configs/coco.yaml
 ```
 
 **OR USE ANY ONE OF THE FOLLOWING**

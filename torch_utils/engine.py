@@ -9,14 +9,16 @@ from torch_utils.coco_eval import CocoEvaluator
 from torch_utils.coco_utils import get_coco_api_from_dataset
 from utils.general import save_validation_results
 import numpy as np
+
+
 def train_one_epoch(
-    model, 
-    optimizer, 
-    data_loader, 
-    device, 
-    epoch, 
+    model,
+    optimizer,
+    data_loader,
+    device,
+    epoch,
     train_loss_hist,
-    print_freq, 
+    print_freq,
     scaler=None,
     scheduler=None
 ):
@@ -89,11 +91,11 @@ def train_one_epoch(
             scheduler.step(epoch + (step_counter/len(data_loader)))
 
     return (
-        metric_logger, 
-        batch_loss_list, 
-        batch_loss_cls_list, 
-        batch_loss_box_reg_list, 
-        batch_loss_objectness_list, 
+        metric_logger,
+        batch_loss_list,
+        batch_loss_cls_list,
+        batch_loss_box_reg_list,
+        batch_loss_objectness_list,
         batch_loss_rpn_list
     )
 
@@ -112,9 +114,9 @@ def _get_iou_types(model):
 
 @torch.inference_mode()
 def evaluate(
-    model, 
-    data_loader, 
-    device, 
+    model,
+    data_loader,
+    device,
     save_valid_preds=False,
     out_dir=None,
     classes=None,
@@ -160,7 +162,7 @@ def evaluate(
             )
         elif save_valid_preds == False and counter == 1:
             val_saved_image = np.ones((1, 64, 64, 3))
-            
+
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
