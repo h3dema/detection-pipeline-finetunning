@@ -320,7 +320,7 @@ def main(args):
 
         # Load the pretrained checkpoint.
         checkpoint = torch.load(args['weights'], map_location=DEVICE)
-        keys = list(checkpoint['model_state_dict'].keys())
+        # keys = list(checkpoint['model_state_dict'].keys())
         ckpt_state_dict = checkpoint['model_state_dict']
         # Get the number of classes from the loaded checkpoint.
         old_classes = ckpt_state_dict['roi_heads.box_predictor.cls_score.weight'].shape[0]
