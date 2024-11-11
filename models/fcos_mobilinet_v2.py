@@ -15,7 +15,7 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 def create_model(num_classes, pretrained=True, coco_model=False):
     # Load the pretrained MobileNet_V2 backbone.
-    backbone = torchvision.models.mobilenet_v2(weights=MobileNet_V2_Weights.DEFAULT).features
+    backbone = torchvision.models.mobilenet_v2(weights=torchvision.models.MobileNet_V2_Weights.DEFAULT).features
 
     # We need the output channels of the last convolutional layers from
     # output channels in a backbone. For mobilenet_v2, it's 1280.
@@ -36,6 +36,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
         anchor_generator=anchor_generator,
     )
     return model
+
 
 if __name__ == '__main__':
     from model_summary import summary
