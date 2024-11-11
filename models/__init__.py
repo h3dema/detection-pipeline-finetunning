@@ -1,7 +1,7 @@
 __all__ = [
     'fasterrcnn_convnext_small',
     'fasterrcnn_convnext_tiny',
-    'fasterrcnn_custom_resnet', 
+    'fasterrcnn_custom_resnet',
     'fasterrcnn_darknet',
     'fasterrcnn_efficientnet_b0',
     'fasterrcnn_efficientnet_b4',
@@ -16,7 +16,7 @@ __all__ = [
     'fasterrcnn_nano',
     'fasterrcnn_resnet18',
     'fasterrcnn_resnet50_fpn_v2',
-    'fasterrcnn_resnet50_fpn', 
+    'fasterrcnn_resnet50_fpn',
     'fasterrcnn_resnet101',
     'fasterrcnn_resnet152',
     'fasterrcnn_squeezenet1_0',

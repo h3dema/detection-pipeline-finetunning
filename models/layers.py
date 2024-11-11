@@ -8,12 +8,13 @@ from abc import ABCMeta, abstractmethod
 from typing import Dict, Optional
 from dataclasses import dataclass
 from models.utils import (
-    TORCH_VERSION, 
+    TORCH_VERSION,
     get_world_size,
     differentiable_all_reduce
 )
 from torch.nn import BatchNorm2d
 from torch import dist
+
 
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
@@ -32,7 +33,8 @@ class Mlp(nn.Module):
         x = self.fc2(x)
         x = self.drop(x)
         return x
-    
+
+
 def drop_path(x, drop_prob: float = 0., training: bool = False, scale_by_keep: bool = True):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
     This is the same as the DropConnect impl I created for EfficientNet, etc networks, however,
@@ -68,6 +70,7 @@ class ShapeSpec:
 class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks).
     """
+
     def __init__(self, drop_prob: float = 0., scale_by_keep: bool = True):
         super(DropPath, self).__init__()
         self.drop_prob = drop_prob
@@ -78,11 +81,13 @@ class DropPath(nn.Module):
 
     def extra_repr(self):
         return f'drop_prob={round(self.drop_prob,3):0.3f}'
-    
+
+
 class Backbone(nn.Module, metaclass=ABCMeta):
     """
     Abstract base class for network backbones.
     """
+
     def __init__(self):
         """
         The `__init__` method of any subclass can specify its own set of arguments.
@@ -140,7 +145,8 @@ class Backbone(nn.Module, metaclass=ABCMeta):
             )
             for name in self._out_features
         }
-    
+
+
 def get_rel_pos(q_size, k_size, rel_pos):
     """
     Get relative positional embeddings according to the relative positions of
@@ -172,6 +178,7 @@ def get_rel_pos(q_size, k_size, rel_pos):
 
     return rel_pos_resized[relative_coords.long()]
 
+
 def add_decomposed_rel_pos(attn, q, rel_pos_h, rel_pos_w, q_size, k_size):
     """
     Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
@@ -202,6 +209,7 @@ def add_decomposed_rel_pos(attn, q, rel_pos_h, rel_pos_w, q_size, k_size):
 
     return attn
 
+
 class Conv2d(torch.nn.Conv2d):
     """
     A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features.
@@ -210,7 +218,7 @@ class Conv2d(torch.nn.Conv2d):
     def __init__(self, *args, **kwargs):
         """
         Extra keyword arguments supported in addition to those in `torch.nn.Conv2d`:
-        
+
         :param norm (nn.Module, optional): a normalization layer
         :param activation (callable(Tensor) -> Tensor): a callable activation function
         It assumes that norm layer is used before activation.
@@ -245,6 +253,7 @@ class Conv2d(torch.nn.Conv2d):
         if self.activation is not None:
             x = self.activation(x)
         return x
+
 
 class Attention(nn.Module):
     """Multi-head Attention block with relative position embeddings."""
@@ -302,6 +311,7 @@ class Attention(nn.Module):
         x = self.proj(x)
 
         return x
+
 
 class FrozenBatchNorm2d(nn.Module):
     """
@@ -377,7 +387,7 @@ class FrozenBatchNorm2d(nn.Module):
     def convert_frozen_batchnorm(cls, module):
         """
         Convert all BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.
-        
+
         :param module (torch.nn.Module):
         Returns:
             If module is BatchNorm/SyncBatchNorm, returns a new module.
@@ -419,7 +429,7 @@ class CNNBlockBase(nn.Module):
     def __init__(self, in_channels, out_channels, stride):
         """
         The `__init__` method of any subclass should also contain these arguments.
-        
+
         :param in_channels (int):
         :param out_channels (int):
         :param stride (int):
@@ -440,7 +450,8 @@ class CNNBlockBase(nn.Module):
         for p in self.parameters():
             p.requires_grad = False
         FrozenBatchNorm2d.convert_frozen_batchnorm(self)
-        return 
+        return
+
 
 class LayerNorm(nn.Module):
     """
@@ -463,6 +474,7 @@ class LayerNorm(nn.Module):
         x = (x - u) / torch.sqrt(s + self.eps)
         x = self.weight[:, None, None] * x + self.bias[:, None, None]
         return x
+
 
 def get_norm(norm, out_channels):
     """
@@ -491,6 +503,7 @@ def get_norm(norm, out_channels):
             "LN": lambda channels: LayerNorm(channels),
         }[norm]
     return norm(out_channels)
+
 
 class NaiveSyncBatchNorm(BatchNorm2d):
     """
@@ -567,11 +580,12 @@ class NaiveSyncBatchNorm(BatchNorm2d):
             ret = ret.half()
         return ret
 
+
 def c2_msra_fill(module: nn.Module) -> None:
     """
     Initialize `module.weight` using the "MSRAFill" implemented in Caffe2.
     Also initializes `module.bias` to 0.
-    
+
     :param module (torch.nn.Module): module to initialize.
     """
     # pyre-fixme[6]: For 1st param expected `Tensor` but got `Union[Module, Tensor]`.
@@ -580,6 +594,7 @@ def c2_msra_fill(module: nn.Module) -> None:
         # pyre-fixme[6]: Expected `Tensor` for 1st param but got `Union[nn.Module,
         #  torch.Tensor]`.
         nn.init.constant_(module.bias, 0)
+
 
 class ResBottleneckBlock(CNNBlockBase):
     """
@@ -640,6 +655,7 @@ class ResBottleneckBlock(CNNBlockBase):
         out = x + out
         return out
 
+
 def window_partition(x, window_size):
     """
     Partition into non-overlapping windows with padding if needed.
@@ -662,10 +678,11 @@ def window_partition(x, window_size):
     windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
     return windows, (Hp, Wp)
 
+
 def window_unpartition(windows, window_size, pad_hw, hw):
     """
     Window unpartition into original sequences and removing padding.
-    
+
     :param x (tensor): input tokens with [B * num_windows, window_size, window_size, C].
     :param window_size (int): window size.
     :param pad_hw (Tuple): padded height and width (Hp, Wp).
@@ -683,11 +700,12 @@ def window_unpartition(windows, window_size, pad_hw, hw):
         x = x[:, :H, :W, :].contiguous()
     return x
 
+
 def get_abs_pos(abs_pos, has_cls_token, hw):
     """
     Calculate absolute positional embeddings. If needed, resize embeddings and remove cls_token
         dimension for the original embeddings.
-    
+
     :param abs_pos (Tensor): absolute positional embeddings with (1, num_position, C).
     :param has_cls_token (bool): If true, has 1 embedding in abs_pos for cls token.
     :param hw (Tuple): size of input image tokens.
@@ -712,6 +730,7 @@ def get_abs_pos(abs_pos, has_cls_token, hw):
         return new_abs_pos.permute(0, 2, 3, 1)
     else:
         return abs_pos.reshape(1, h, w, -1)
+
 
 class Block(nn.Module):
     """Transformer blocks with support of window attention and residual propagation blocks"""
@@ -796,6 +815,7 @@ class Block(nn.Module):
 
         return x
 
+
 class PatchEmbed(nn.Module):
     """
     Image to Patch Embedding.
@@ -822,7 +842,8 @@ class PatchEmbed(nn.Module):
         # B C H W -> B H W C
         x = x.permute(0, 2, 3, 1)
         return x
-    
+
+
 class LastLevelMaxPool(nn.Module):
     """
     This module is used in the original FPN to generate a downsampled

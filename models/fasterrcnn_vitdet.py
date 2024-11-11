@@ -12,15 +12,16 @@ import torchvision
 from functools import partial
 from torchvision.models.detection import FasterRCNN
 from models.layers import (
-    Backbone, 
-    PatchEmbed, 
-    Block, 
+    Backbone,
+    PatchEmbed,
+    Block,
     get_abs_pos,
     get_norm,
     Conv2d,
     LastLevelMaxPool
 )
 from models.utils import _assert_strides_are_log2_contiguous
+
 
 class ViT(Backbone):
     """
@@ -54,7 +55,7 @@ class ViT(Backbone):
         out_feature="last_feat",
     ):
         """
-        
+
         :param img_size (int): Input image size.
         :param patch_size (int): Patch size.
         :param in_chans (int): Number of input image channels.
@@ -151,6 +152,7 @@ class ViT(Backbone):
 
         outputs = {self._out_features[0]: x.permute(0, 3, 1, 2)}
         return outputs
+
 
 class SimpleFeaturePyramid(Backbone):
     """
@@ -291,6 +293,7 @@ class SimpleFeaturePyramid(Backbone):
         assert len(self._out_features) == len(results)
         return {f: res for f, res in zip(self._out_features, results)}
 
+
 def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Base
     embed_dim, depth, num_heads, dp = 768, 12, 12, 0.1
@@ -356,6 +359,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
         box_roi_pool=roi_pooler
     )
     return model
+
 
 if __name__ == '__main__':
     from model_summary import summary

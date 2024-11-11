@@ -1,5 +1,5 @@
 """
-Faster RCNN model with the MobileNetV3 Small backbone from 
+Faster RCNN model with the MobileNetV3 Small backbone from
 Torchvision classification models.
 
 Reference: https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
@@ -15,8 +15,9 @@ import torch
 import torch.nn.functional as F
 
 from torch import nn
-from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection import FasterRCNN  # type: ignore
+from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
+
 
 class TwoMLPHead(nn.Module):
     """
@@ -40,6 +41,7 @@ class TwoMLPHead(nn.Module):
         x = F.relu(self.fc7(x))
 
         return x
+
 
 class FastRCNNPredictor(nn.Module):
     """
@@ -68,17 +70,18 @@ class FastRCNNPredictor(nn.Module):
 
         return scores, bbox_deltas
 
+
 def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Load the pretrained MobileNetV3 Small features.
     backbone = torchvision.models.mobilenet_v3_small(pretrained=True).features
 
-    # Change the features of block 16 in 
+    # Change the features of block 16 in
     # the backbone to reduce size.
-    backbone[12 ][0] = nn.Conv2d(
-        in_channels=96, 
-        out_channels=128, 
-        kernel_size=(1, 1), 
-        stride=(1, 1), 
+    backbone[12][0] = nn.Conv2d(
+        in_channels=96,
+        out_channels=128,
+        kernel_size=(1, 1),
+        stride=(1, 1),
         bias=False
     )
     backbone[12][1] = nn.BatchNorm2d(num_features=128)
@@ -89,7 +92,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     backbone.out_channels = 128
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -109,7 +112,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
     # Box head.
     box_head = TwoMLPHead(
-        in_channels=backbone.out_channels * roi_pooler.output_size[0] ** 2, 
+        in_channels=backbone.out_channels * roi_pooler.output_size[0] ** 2,
         representation_size=representation_size
     )
 
@@ -119,13 +122,14 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Final Faster RCNN model.
     model = FasterRCNN(
         backbone=backbone,
-        num_classes=None, # Num classes should be None when `box_predictor` is provided.
+        num_classes=None,  # Num classes should be None when `box_predictor` is provided.
         rpn_anchor_generator=anchor_generator,
         box_roi_pool=roi_pooler,
         box_head=box_head,
         box_predictor=box_predictor
     )
     return model
+
 
 if __name__ == '__main__':
     from model_summary import summary

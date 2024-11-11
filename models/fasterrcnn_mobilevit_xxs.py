@@ -21,6 +21,7 @@ except:
     print('https://github.com/sovit-123/vision_transformers')
     assert ('vision_transformers' in sys.modules), 'vision_transformers not found'
 
+
 def create_model(num_classes, pretrained=True, coco_model=False):
     # Load the backbone.
     model_backbone = mobilevit_xxs(pretrained=pretrained)
@@ -31,7 +32,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     backbone.out_channels = 320
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -55,6 +56,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
         box_roi_pool=roi_pooler
     )
     return model
+
 
 if __name__ == '__main__':
     from model_summary import summary
