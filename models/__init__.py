@@ -28,3 +28,4 @@ __all__ = [
     'fasterrcnn_regnet_y_400mf',
     'fasterrcnn_vgg16'
 ]
+

@@ -1,11 +1,13 @@
 import torchvision
 
 from torch import nn
-from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection import FasterRCNN  # type: ignore
+from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
 
-# A DarkNet model with reduced output channels for each layer.
+
 class DarkNet(nn.Module):
+    # A DarkNet model with reduced output channels for each layer.
+
     def __init__(self, initialize_weights=True, num_classes=1000):
         super(DarkNet, self).__init__()
 
@@ -76,7 +78,7 @@ class DarkNet(nn.Module):
             nn.AvgPool2d(7),
         )
         return pool
-    
+
     def _create_fc_layers(self):
         fc_layers = nn.Sequential(
             nn.Linear(128, self.num_classes)
@@ -87,10 +89,10 @@ class DarkNet(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal(m.weight, mode='fan_in',
-                    nonlinearity='leaky_relu'
-                )
+                                       nonlinearity='leaky_relu'
+                                       )
                 if m.bias is not None:
-                        nn.init.constant_(m.bias, 0)
+                    nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
@@ -102,6 +104,7 @@ class DarkNet(nn.Module):
         x = self.fcs(x)
         return x
 
+
 def create_model(num_classes, pretrained=True, coco_model=False):
     # Load the Mini DarkNet model features.
     backbone = DarkNet(num_classes=10).features
@@ -112,7 +115,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     backbone.out_channels = 128
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -137,7 +140,9 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     )
     return model
 
+
 if __name__ == '__main__':
     from model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
+

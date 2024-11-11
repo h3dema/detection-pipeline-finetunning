@@ -2,13 +2,15 @@ import torchvision
 
 from torch import nn
 from torch.nn import functional as F
-from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection import FasterRCNN  # type: ignore
+from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
+
 
 class ResidualBlock(nn.Module):
     """
     Creates the Residual block of ResNet.
     """
+
     def __init__(
         self, in_channels, out_channels, use_1x1conv=True, strides=1
     ):
@@ -34,26 +36,28 @@ class ResidualBlock(nn.Module):
         x += inputs
         return F.relu(x)
 
+
 def create_resnet_block(
     input_channels,
-    output_channels, 
+    output_channels,
     num_residuals,
 ):
-        resnet_block = []
-        for i in range(num_residuals):
-            if i == 0:
-                resnet_block.append(ResidualBlock(input_channels, output_channels,
-                                    use_1x1conv=True, strides=2))
-            else:
-                resnet_block.append(ResidualBlock(output_channels, output_channels))
-        return resnet_block
+    resnet_block = []
+    for i in range(num_residuals):
+        if i == 0:
+            resnet_block.append(ResidualBlock(input_channels, output_channels,
+                                              use_1x1conv=True, strides=2))
+        else:
+            resnet_block.append(ResidualBlock(output_channels, output_channels))
+    return resnet_block
+
 
 class CustomResNet(nn.Module):
     def __init__(self, num_classes=10):
         super().__init__()
         self.block1 = nn.Sequential(nn.Conv2d(3, 16, kernel_size=7, stride=2, padding=3),
-                        nn.BatchNorm2d(16), nn.ReLU(),
-                        nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
+                                    nn.BatchNorm2d(16), nn.ReLU(),
+                                    nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
         self.block2 = nn.Sequential(*create_resnet_block(16, 32, 2))
         self.block3 = nn.Sequential(*create_resnet_block(32, 64, 2))
         self.block4 = nn.Sequential(*create_resnet_block(64, 128, 2))
@@ -72,13 +76,14 @@ class CustomResNet(nn.Module):
         x = self.linear(x)
         return x
 
+
 def create_model(num_classes, pretrained=True, coco_model=False):
     # Load the pretrained ResNet18 backbone.
     # if pretrained:
-        # print('Loading Tiny ImageNet weights...')
-        # custom_resnet = CustomResNet(num_classes=200)
-        # checkpoint = torch.load('outputs/custom_resnet_weights/model_best.pth.tar')
-        # custom_resnet.load_state_dict(checkpoint['state_dict'])
+    #     print('Loading Tiny ImageNet weights...')
+    #     custom_resnet = CustomResNet(num_classes=200)
+    #     checkpoint = torch.load('outputs/custom_resnet_weights/model_best.pth.tar')
+    #     custom_resnet.load_state_dict(checkpoint['state_dict'])
     # else:
     print('Loading Custom ResNet with random weights')
     custom_resnet = CustomResNet(num_classes=10)
@@ -90,7 +95,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     block5 = custom_resnet.block5
 
     backbone = nn.Sequential(
-        block1, block2, block3, block4, block5 
+        block1, block2, block3, block4, block5
     )
 
     # We need the output channels of the last convolutional layers from
@@ -99,7 +104,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     backbone.out_channels = 256
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -124,7 +129,9 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     )
     return model
 
+
 if __name__ == '__main__':
     from model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
+

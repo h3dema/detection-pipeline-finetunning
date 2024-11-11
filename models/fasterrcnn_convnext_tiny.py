@@ -1,5 +1,5 @@
 """
-Faster RCNN model with the Convnext Tiny backbone from 
+Faster RCNN model with the Convnext Tiny backbone from
 Torchvision classification models.
 
 Reference: https://pytorch.org/vision/stable/models/generated/torchvision.models.convnext_tiny.html#torchvision.models.convnext_tiny
@@ -7,8 +7,9 @@ Reference: https://pytorch.org/vision/stable/models/generated/torchvision.models
 
 import torchvision
 
-from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection import FasterRCNN  # type: ignore
+from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
+
 
 def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Load the pretrained features.
@@ -22,7 +23,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     backbone.out_channels = 768
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -48,7 +49,9 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
     return model
 
+
 if __name__ == '__main__':
     from model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
+

@@ -3,11 +3,11 @@ Faster RCNN model with the EfficientNetB0 backbone.
 
 Reference: https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
 """
-
 import torchvision
 
-from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection import FasterRCNN  # type: ignore
+from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
+
 
 def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Load the pretrained EfficientNetB0 large features.
@@ -15,10 +15,10 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
     # We need the output channels of the last convolutional layers from
     # the features for the Faster RCNN model.
-    backbone.out_channels = 1280 # 1280 for EfficientNetB0.
+    backbone.out_channels = 1280  # 1280 for EfficientNetB0.
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -44,7 +44,9 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
     return model
 
+
 if __name__ == '__main__':
     from model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
+

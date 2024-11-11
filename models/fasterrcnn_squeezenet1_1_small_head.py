@@ -3,7 +3,7 @@ Backbone: SqueezeNet1_1
 Torchvision link: https://pytorch.org/vision/stable/models.html#id15
 SqueezeNet repo: https://github.com/forresti/SqueezeNet/tree/master/SqueezeNet_v1.1
 
-Detection Head: Custom Mini Faster RCNN Head. 
+Detection Head: Custom Mini Faster RCNN Head.
 """
 
 import torchvision
@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from torch import nn
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
+
 
 class TwoMLPHead(nn.Module):
     """
@@ -36,6 +37,7 @@ class TwoMLPHead(nn.Module):
         x = F.relu(self.fc7(x))
 
         return x
+
 
 class FastRCNNPredictor(nn.Module):
     """
@@ -64,6 +66,7 @@ class FastRCNNPredictor(nn.Module):
 
         return scores, bbox_deltas
 
+
 def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Load the pretrained SqueezeNet1_1 backbone.
     backbone = torchvision.models.squeezenet1_1(pretrained=pretrained).features
@@ -74,7 +77,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     backbone.out_channels = 512
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -94,7 +97,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
     # Box head.
     box_head = TwoMLPHead(
-        in_channels=backbone.out_channels * roi_pooler.output_size[0] ** 2, 
+        in_channels=backbone.out_channels * roi_pooler.output_size[0] ** 2,
         representation_size=representation_size
     )
 
@@ -104,7 +107,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     # Final Faster RCNN model.
     model = FasterRCNN(
         backbone=backbone,
-        num_classes=None, # Num classes shoule be None when `box_predictor` is provided.
+        num_classes=None,  # Num classes shoule be None when `box_predictor` is provided.
         rpn_anchor_generator=anchor_generator,
         box_roi_pool=roi_pooler,
         box_head=box_head,
@@ -112,7 +115,9 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     )
     return model
 
+
 if __name__ == '__main__':
     from model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
+
