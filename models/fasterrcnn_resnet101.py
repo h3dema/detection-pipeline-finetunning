@@ -11,6 +11,7 @@ import torch.nn as nn
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 
+
 def create_model(num_classes=81, pretrained=True, coco_model=False):
     model_backbone = torchvision.models.resnet101(weights='DEFAULT')
 
@@ -24,19 +25,19 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     layer4 = model_backbone.layer4
 
     backbone = nn.Sequential(
-        conv1, 
-        bn1, 
-        relu, 
-        max_pool, 
-        layer1, 
-        layer2, 
-        layer3, 
+        conv1,
+        bn1,
+        relu,
+        max_pool,
+        layer1,
+        layer2,
+        layer3,
         layer4
     )
     backbone.out_channels = 2048
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect 
+    # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
     anchor_generator = AnchorGenerator(
         sizes=((32, 64, 128, 256, 512),),
@@ -61,6 +62,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     )
 
     return model
+
 
 if __name__ == '__main__':
     from model_summary import summary

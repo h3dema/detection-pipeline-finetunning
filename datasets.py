@@ -45,6 +45,9 @@ class CustomDataset(Dataset):
         self.mosaic = mosaic
         self.log_annot_issue_y = True
 
+        self.load_dataset()
+
+    def load_dataset(self) -> None:
         # get all the image paths in sorted order
         for file_type in self.image_file_types:
             self.all_image_paths.extend(glob.glob(os.path.join(self.images_path, file_type)))
@@ -55,7 +58,26 @@ class CustomDataset(Dataset):
         self.read_and_clean()
 
     def read_and_clean(self):
-        print('Checking Labels and images...')
+        """
+        Cleans the dataset by checking for missing or problematic annotations.
+
+        This method iterates through all images and their corresponding annotation
+        files to verify their existence and validity. If an image lacks a corresponding
+            print('Checking Labels and images...')
+        Steps:
+        - Verify if an annotation file exists for each image.
+        - Check for invalid bounding boxes in the annotation files.
+        - Remove images and annotations that are missing or contain invalid data.
+        - Print warnings for images with invalid bounding boxes.
+
+        Modifies:
+        - self.all_images: Removes entries for images with missing or invalid annotations.
+        - self.all_annot_paths: Removes paths for annotations associated with problematic images.
+
+        Prints:
+        - Warnings for each image with missing annotations.
+        - A summary of removed problematic images and annotations.
+        """
         images_to_remove = []
         problematic_images = []
 
@@ -102,6 +124,16 @@ class CustomDataset(Dataset):
         print(f"Removed {len(images_to_remove)} problematic images and annotations.")
 
     def resize(self, im, square=False):
+        """
+        Resizes an image to the specified size, optionally forcing a square size.
+
+        Args:
+            im (numpy.ndarray): The image to resize.
+            square (bool, optional): If True, forces a square size. Defaults to False.
+
+        Returns:
+            numpy.ndarray: The resized image.
+        """
         if square:
             im = cv2.resize(im, (self.img_size, self.img_size))
         else:
@@ -112,6 +144,22 @@ class CustomDataset(Dataset):
         return im
 
     def load_image_and_labels(self, index):
+        """
+        Loads an image and its corresponding labels from a given index.
+
+        Args:
+            index (int): The index of the image to load.
+
+        Returns:
+            image (numpy.ndarray): The loaded image as a numpy array.
+            image_resized (numpy.ndarray): The resized image with the same RGB values as the original image.
+            orig_boxes (numpy.ndarray): The original bounding box coordinates of the labels.
+            boxes (numpy.ndarray): The resized bounding box coordinates of the labels.
+            labels (numpy.ndarray): The labels corresponding to the bounding boxes.
+            area (int): The area of the resized image.
+            iscrowd (bool): A boolean indicating whether the image is crowded.
+            dims (tuple): A tuple containing the height and width of the resized image.
+        """
         image_name = self.all_images[index]
         image_path = os.path.join(self.images_path, image_name)
 
@@ -198,17 +246,35 @@ class CustomDataset(Dataset):
 
     def check_image_and_annotation(
         self,
-        xmin,
-        ymin,
-        xmax,
-        ymax,
-        width,
-        height,
+        xmin: int,
+        ymin: int,
+        xmax: int,
+        ymax: int,
+        width: int,
+        height: int,
         orig_data=False
     ):
         """
+        Validates and adjusts the bounding box coordinates to ensure they fall within
+        the specified image dimensions.
+
         Check that all x_max and y_max are not more than the image
-        width or height.
+        width or height. If the bounding box is invalid, correct it
+        by setting x_max/xmin or y_max/ymin to the edge of the image.
+
+
+        Args:
+            xmin (int): The minimum x-coordinate of the bounding box.
+            ymin (int): The minimum y-coordinate of the bounding box.
+            xmax (int): The maximum x-coordinate of the bounding box.
+            ymax (int): The maximum y-coordinate of the bounding box.
+            width (int): The width of the image.
+            height (int): The height of the image.
+            orig_data (bool): A flag indicating if the original data annotations
+                            are being used.
+
+        Returns:
+            tuple: A tuple containing the adjusted (xmin, ymin, xmax, ymax) coordinates.
         """
         if ymax > height:
             ymax = height
@@ -307,10 +373,32 @@ class CustomDataset(Dataset):
         result_image, result_boxes = transform_mosaic(
             result_image, result_boxes, self.img_size
         )
-        return result_image, torch.tensor(result_boxes), \
-            torch.tensor(np.array(final_classes)), area, iscrowd, dims
+        return (
+            result_image,
+            torch.tensor(result_boxes),
+            torch.tensor(np.array(final_classes)),
+            area,
+            iscrowd,
+            dims
+        )
 
     def __getitem__(self, idx):
+        """
+        This is a special method in Python classes, `__getitem__`,
+        which is used to retrieve an item from a dataset.
+
+        The method takes an index `idx` as input and
+        returns a resized image and a dictionary `target` containing bounding box coordinates, class labels, area, and iscrowd annotations for that image.
+        The method applies different data loading and augmentation strategies
+        depending on whether the dataset is in training mode (`self.train`) or not.
+
+        Args:
+            idx (_type_): _description_
+
+        Returns:
+            image_resized (np.ndarray): The resized image.
+            target (dict): A dictionary containing the bounding box coordinates, class labels, area, and iscrowd annotations.
+        """
         if not self.train:  # No mosaic during validation.
             image, image_resized, orig_boxes, boxes, \
                 labels, area, iscrowd, dims = self.load_image_and_labels(
@@ -360,6 +448,13 @@ class CustomDataset(Dataset):
         return image_resized, target
 
     def __len__(self):
+        """
+        Number of images
+
+        Returns:
+            Returns the number of images in the dataset.
+
+        """
         return len(self.all_images)
 
 
