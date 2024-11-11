@@ -1,9 +1,9 @@
+# local data/results folders
 data/*
 !data/README.md
 outputs/
 inference_outputs
 test.sh
-*__pycache__/
 
 # Custom weights folder (mainly for testing).
 weights/
@@ -13,3 +13,6 @@ wandb/*
 
 # IPython checkpoints
 .ipynb_checkpoints
+
+*__pycache__/
+*.pyc
