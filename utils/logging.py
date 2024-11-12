@@ -224,6 +224,7 @@ def wandb_save_model(model_dir):
     """
     wandb.save(os.path.join(model_dir, 'best_model.pth'))
 
+
 class LogJSON():
     def __init__(self, output_filename):
         """

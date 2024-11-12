@@ -36,7 +36,7 @@ create_model = {
 # ========
 #
 # cd detection_pipeline_finetunning
-# python3 -m models.create_fasterrcnn_model
+# python3 -m models.create_detection_model
 #
 if __name__ == "__main__":
     import torch

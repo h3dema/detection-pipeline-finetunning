@@ -10,7 +10,7 @@ import yaml
 import matplotlib.pyplot as plt
 import pandas
 
-from models.create_fasterrcnn_model import create_model
+from models.create_detection_model import create_model
 from utils.annotations import (
     inference_annotations, convert_detections
 )

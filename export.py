@@ -13,7 +13,7 @@ import argparse
 import yaml
 import os
 
-from models.create_fasterrcnn_model import create_model
+from models.create_detection_model import create_model
 
 
 def parse_opt():

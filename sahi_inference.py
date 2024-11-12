@@ -23,7 +23,7 @@ from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 from sahi.utils.file import list_files
 
-from models.create_fasterrcnn_model import create_model
+from models.create_detection_model import create_model
 from utils.annotations import inference_annotations, convert_detections
 from utils.general import set_infer_dir
 from utils.transforms import resize

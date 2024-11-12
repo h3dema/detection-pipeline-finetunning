@@ -6,7 +6,7 @@ from torch_utils.engine import evaluate
 from datasets import (
     create_valid_dataset, create_valid_loader
 )
-from models.create_fasterrcnn_model import create_model
+from models.create_detection_model import create_model
 
 import torch
 import argparse

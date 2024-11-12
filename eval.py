@@ -7,7 +7,7 @@ python eval.py --data configs/voc.yaml --weights outputs/training/fasterrcnn_con
 from datasets import (
     create_valid_dataset, create_valid_loader
 )
-from models.create_fasterrcnn_model import create_model
+from models.create_detection_model import create_model
 from torch_utils import utils
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from pprint import pprint
