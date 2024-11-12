@@ -176,6 +176,7 @@ def save_mAP(OUT_DIR, map_05, map):
     ax.legend()
     figure.savefig(f"{OUT_DIR}/map.png")
 
+
 def visualize_mosaic_images(boxes, labels, image_resized, classes):
     print(boxes)
     print(labels)
@@ -232,6 +233,7 @@ def save_model(
                 'model_name': model_name
                 }, f"{OUT_DIR}/last_model.pth")
 
+    
 def save_model_state(model, OUT_DIR, config, model_name):
     """
     Saves the model state dictionary only. Has a smaller size compared 
@@ -247,12 +249,14 @@ def save_model_state(model, OUT_DIR, config, model_name):
                 'model_name': model_name
                 }, f"{OUT_DIR}/last_model_state.pth")
 
+
 def denormalize(x, mean=None, std=None):
     # Shape of x here should be [B, 3, H, W].
     for t, m, s in zip(x, mean, std):
         t.mul_(s).add_(m)
     # Returns tensor of shape [B, 3, H, W].
     return torch.clamp(t, 0, 1)
+
 
 def save_validation_results(images, detections, counter, out_dir, classes, colors):
     """
@@ -295,6 +299,7 @@ def save_validation_results(images, detections, counter, out_dir, classes, color
         image_list.append(image[:, :, ::-1])
     return image_list
 
+    
 def set_infer_dir():
     """
     This functions counts the number of inference directories already present
@@ -331,6 +336,7 @@ def set_training_dir(dir_name=None, project_dir=None):
         os.makedirs(new_dir_name, exist_ok=True)
         return new_dir_name
 
+    
 def yaml_save(file_path=None, data={}):
     with open(file_path, 'w') as f:
         yaml.safe_dump(
@@ -338,6 +344,7 @@ def yaml_save(file_path=None, data={}):
             f, 
             sort_keys=False
         )
+
 
 class EarlyStopping():
     """

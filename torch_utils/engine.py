@@ -33,6 +33,7 @@ def train_one_epoch(
     batch_loss_box_reg_list = []
     batch_loss_objectness_list = []
     batch_loss_rpn_list = []
+    batch_loss_bbox_ctrness = []
 
     lr_scheduler = None
     if epoch == 0:
@@ -49,8 +50,8 @@ def train_one_epoch(
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device).to(torch.int64) for k, v in t.items()} for t in targets]
 
-
-        with torch.cuda.amp.autocast(enabled=scaler is not None):
+        # torch.cuda.amp.autocast will be deprecated
+        with torch.amp.autocast(device.type, enabled=scaler is not None):
             loss_dict = model(images, targets)
             losses = sum(loss for loss in loss_dict.values())
 
@@ -81,10 +82,26 @@ def train_one_epoch(
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
 
         batch_loss_list.append(loss_value)
-        batch_loss_cls_list.append(loss_dict_reduced['loss_classifier'].detach().cpu())
-        batch_loss_box_reg_list.append(loss_dict_reduced['loss_box_reg'].detach().cpu())
-        batch_loss_objectness_list.append(loss_dict_reduced['loss_objectness'].detach().cpu())
-        batch_loss_rpn_list.append(loss_dict_reduced['loss_rpn_box_reg'].detach().cpu())
+
+        if 'loss_classifier' in loss_dict_reduced:  # FasterRCNN
+            batch_loss_cls_list.append(loss_dict_reduced['loss_classifier'].detach().cpu())
+        elif 'classification' in loss_dict_reduced:  # FCOS
+            batch_loss_cls_list.append(loss_dict_reduced['classification'].detach().cpu())
+
+        if 'loss_box_reg' in loss_dict_reduced:
+            batch_loss_box_reg_list.append(loss_dict_reduced['loss_box_reg'].detach().cpu())
+        elif 'bbox_regression' in loss_dict_reduced:
+            batch_loss_box_reg_list.append(loss_dict_reduced['bbox_regression'].detach().cpu())
+
+        if 'loss_objectness' in loss_dict_reduced:
+            batch_loss_objectness_list.append(loss_dict_reduced['loss_objectness'].detach().cpu())    
+
+        if 'loss_rpn_box_reg' in loss_dict_reduced:
+            batch_loss_rpn_list.append(loss_dict_reduced['loss_rpn_box_reg'].detach().cpu())
+
+        if 'bbox_ctrness' in  loss_dict_reduced:
+            batch_loss_bbox_ctrness.append(loss_dict_reduced['bbox_ctrness'].detach().cpu())
+        
         train_loss_hist.send(loss_value)
 
         if scheduler is not None:
@@ -96,7 +113,8 @@ def train_one_epoch(
         batch_loss_cls_list,
         batch_loss_box_reg_list,
         batch_loss_objectness_list,
-        batch_loss_rpn_list
+        batch_loss_rpn_list,
+        batch_loss_bbox_ctrness
     )
 
 
