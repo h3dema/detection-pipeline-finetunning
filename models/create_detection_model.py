@@ -45,9 +45,9 @@ if __name__ == "__main__":
     import torch
     # model_name = 'fcos_mobilinet_v2'
     # model_name = 'fasterrcnn_resnet50_fpn'
-    model_name = 'retinanet_mobilenet_v2'
+    # model_name = 'retinanet_mobilenet_v2'
     # model_name = 'retinanet_resnet50'
-    # model_name = 'ssd_vgg16'
+    model_name = 'ssd_vgg16'
 
     build_model = create_model[model_name]
     model = build_model(num_classes=20)

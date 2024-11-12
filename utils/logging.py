@@ -167,7 +167,7 @@ def wandb_log(
             'train_loss_cls': loss_cls_list[-1],
             'train_loss_box_reg': loss_box_reg_list[-1],
             'train_loss_obj': loss_objectness_list[-1],
-            'train_loss_rpn': loss_rpn_list[-1]
+            'train_loss_rpn': loss_rpn_list[-1],
             'train_loss_bbox_ctrness': loss_bbox_ctrness[-1],
         }
     )
