@@ -1,4 +1,5 @@
 import argparse
+from models.create_detection_model import create_model
 
 
 def parse_opt(default_config=None):
@@ -7,6 +8,7 @@ def parse_opt(default_config=None):
     parser.add_argument(
         '-m', '--model',
         default='fasterrcnn_resnet50_fpn_v2',
+        choices=create_model.keys(),
         help='name of the model'
     )
     parser.add_argument(
@@ -21,7 +23,7 @@ def parse_opt(default_config=None):
     )
     parser.add_argument(
         '-e', '--epochs',
-        default=5,
+        default=10,
         type=int,
         help='number of epochs to train for'
     )

@@ -1,19 +1,21 @@
-import torch
-import cv2
-import numpy as np
 import os
 import glob as glob
 import random
-
 from xml.etree import ElementTree as et
+import cv2
+import numpy as np
+import yaml
+from tqdm.auto import tqdm
+
+import torch
 from torch.utils.data import Dataset, DataLoader
+
 from utils.transforms import (
     get_train_transform,
     get_valid_transform,
     get_train_aug,
     transform_mosaic
 )
-from tqdm.auto import tqdm
 
 
 # the dataset class
@@ -466,72 +468,87 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-# Prepare the final datasets and data loaders.
-def create_train_dataset(
-    train_dir_images,
-    train_dir_labels,
-    img_size,
-    classes,
-    use_train_aug=False,
-    mosaic=1.0,
-    square_training=False
-) -> Dataset:
-    train_dataset = CustomDataset(
-        train_dir_images,
-        train_dir_labels,
-        img_size,
-        classes,
-        get_train_transform(),
-        use_train_aug=use_train_aug,
-        train=True,
-        mosaic=mosaic,
-        square_training=square_training
-    )
-    return train_dataset
+class DatasetHandler():
 
+    def __init__(self, args):
+        # Load the data configurations
+        with open(args['config']) as file:
+            self.data_configs = yaml.safe_load(file)
 
-def create_valid_dataset(
-    valid_dir_images,
-    valid_dir_labels,
-    img_size,
-    classes,
-    square_training=False
-) -> Dataset:
-    valid_dataset = CustomDataset(
-        valid_dir_images,
-        valid_dir_labels,
-        img_size,
-        classes,
-        get_valid_transform(),
-        train=False,
-        square_training=square_training
-    )
-    return valid_dataset
+        self.train_dir_images = os.path.normpath(self.data_configs['TRAIN_DIR_IMAGES'])
+        self.train_dir_labels = os.path.normpath(self.data_configs['TRAIN_DIR_LABELS'])
+        self.valid_dir_images = os.path.normpath(self.data_configs['VALID_DIR_IMAGES'])
+        self.valid_dir_labels = os.path.normpath(self.data_configs['VALID_DIR_LABELS'])
+        
+        self.img_size = args['imgsz']        
+        self.classes = self.data_configs['CLASSES']
 
-
-def create_train_loader(
-    train_dataset, batch_size, num_workers=0, batch_sampler=None
-) -> DataLoader:
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        # shuffle=True,
-        num_workers=num_workers,
-        collate_fn=collate_fn,
-        sampler=batch_sampler
-    )
-    return train_loader
-
-
-def create_valid_loader(
-    valid_dataset, batch_size, num_workers=0, batch_sampler=None
-) -> DataLoader:
-    valid_loader = DataLoader(
-        valid_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        collate_fn=collate_fn,
-        sampler=batch_sampler
-    )
-    return valid_loader
+    @property
+    def save_valid_prediction_images(self):
+        return self.data_configs.get('SAVE_VALID_PREDICTION_IMAGES', False)
+        
+    @property
+    def num_classes(self):
+        return self.data_configs['NC']
+            
+    # Prepare the final datasets and data loaders.
+    def create_train_dataset(self,
+        use_train_aug=False,
+        mosaic=1.0,
+        square_training=False
+    ) -> Dataset:
+        train_dataset = CustomDataset(
+            self.train_dir_images,
+            self.train_dir_labels,
+            self.img_size,
+            self.classes,
+            get_train_transform(),
+            use_train_aug=use_train_aug,
+            train=True,
+            mosaic=mosaic,
+            square_training=square_training
+        )
+        return train_dataset
+    
+    def create_valid_dataset(self, square_training=False) -> Dataset:
+        valid_dataset = CustomDataset(
+            self.valid_dir_images,
+            self.valid_dir_labels,
+            self.img_size,
+            self.classes,
+            get_valid_transform(),
+            train=False,
+            square_training=square_training
+        )
+        return valid_dataset    
+    
+    def create_train_loader(self,
+        train_dataset: Dataset,
+        batch_size: int, 
+        num_workers=0,
+        batch_sampler=None
+    ) -> DataLoader:
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            # shuffle=True,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            sampler=batch_sampler
+        )
+        return train_loader 
+    
+    def create_valid_loader(self,
+        valid_dataset: Dataset, 
+        batch_size:int, 
+        num_workers=0, batch_sampler=None
+    ) -> DataLoader:
+        valid_loader = DataLoader(
+            valid_dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            sampler=batch_sampler
+        )
+        return valid_loader
