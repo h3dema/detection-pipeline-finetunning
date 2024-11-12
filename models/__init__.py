@@ -51,5 +51,8 @@ __all__ = [
     'fasterrcnn_mobilevit_xxs',
     'fasterrcnn_regnet_y_400mf',
     'fasterrcnn_vgg16',
-    'fcos_mobilinet_v2'
+    'fcos_mobilinet_v2',
+    'retinanet_resnet50',
+    'retinanet_mobilenet_v2',
+    'ssd_vgg16',
 ]

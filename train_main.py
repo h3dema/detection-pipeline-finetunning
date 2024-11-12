@@ -356,6 +356,7 @@ def main(args, dataset_handler):
                 loss_box_reg_list,
                 loss_objectness_list,
                 loss_rpn_list,
+                loss_bbox_ctrness,
                 stats[1],
                 stats[0],
                 val_pred_image,

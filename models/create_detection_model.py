@@ -29,6 +29,9 @@ create_model = {
     'fasterrcnn_regnet_y_400mf': fasterrcnn_regnet_y_400mf.create_model,  # type: ignore
     'fasterrcnn_vgg16': fasterrcnn_vgg16.create_model,  # type: ignore
     'fcos_mobilinet_v2': fcos_mobilinet_v2.create_model,  # type: ignore
+    'retinanet_resnet50': retinanet_resnet50.create_model,  # type: ignone
+    'retinanet_mobilenet_v2': retinanet_mobilenet_v2.create_model,  # type: ignone
+    'ssd_vgg16': ssd_vgg16.create_model,  # type: ignore
 }
 
 
@@ -40,8 +43,13 @@ create_model = {
 #
 if __name__ == "__main__":
     import torch
-    # build_model = create_model["fcos_mobilinet_v2"]
-    build_model = create_model["fasterrcnn_resnet50_fpn"]
+    # model_name = 'fcos_mobilinet_v2'
+    # model_name = 'fasterrcnn_resnet50_fpn'
+    model_name = 'retinanet_mobilenet_v2'
+    # model_name = 'retinanet_resnet50'
+    # model_name = 'ssd_vgg16'
+
+    build_model = create_model[model_name]
     model = build_model(num_classes=20)
     model.eval().to("cpu")
     x = torch.rand((5, 3, 800, 800))  # batch with 5 elements

@@ -12,7 +12,7 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def create_model(num_classes, pretrained=True, coco_model=False):
-    # Load the pretrained ResNet18 backbone.
+    # Load the pretrained VGG16 backbone.
     model_backbone = torchvision.models.vgg16_bn(weights='DEFAULT')
 
     backbone = model_backbone.features
