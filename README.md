@@ -30,12 +30,11 @@ Train PyTorch models easily on any custom dataset. Choose between official PyTor
 
 ***For this repository:***
 
-|-------|---------|
 | Head size | Description |
 |-------|---------|
-| **Small head** | refers to 512 representation size in the Faster RCNN head and predictor |
-| **Tiny head** | refers to 256 representation size in the Faster RCNN head and predictor  |
-| **Nano head** |  refers to 128 representation size in the Faster RCNN head and predictor  |
+| **Small head** | 512 representation size in the Faster RCNN head and predictor |
+| **Tiny head**  | 256 representation size in the Faster RCNN head and predictor  |
+| **Nano head**  | 128 representation size in the Faster RCNN head and predictor  |
 
 ## [Check All Available Model Flags](#A-List-of-All-Model-Flags-to-Use-With-the-Training-Script)
 
@@ -343,39 +342,8 @@ The following command expects the `coco` dataset to be present one directory bac
 python train.py --model fasterrcnn_resnet50_fpn_v2 --data configs/coco.yaml
 ```
 
-**OR USE ANY ONE OF THE FOLLOWING**
+**OR SEE THE LIST OF OPTIONS IN **: [__INIT__](models/__init__.py)
 
-```
-[
-    'fasterrcnn_convnext_small',
-    'fasterrcnn_convnext_tiny',
-    'fasterrcnn_custom_resnet', 
-    'fasterrcnn_darknet',
-    'fasterrcnn_efficientnet_b0',
-    'fasterrcnn_efficientnet_b4',
-    'fasterrcnn_mbv3_small_nano_head',
-    'fasterrcnn_mbv3_large',
-    'fasterrcnn_mini_darknet_nano_head',
-    'fasterrcnn_mini_darknet',
-    'fasterrcnn_mini_squeezenet1_1_small_head',
-    'fasterrcnn_mini_squeezenet1_1_tiny_head',
-    'fasterrcnn_mobilenetv3_large_320_fpn', # Torchvision COCO pretrained
-    'fasterrcnn_mobilenetv3_large_fpn', # Torchvision COCO pretrained
-    'fasterrcnn_nano',
-    'fasterrcnn_resnet18',
-    'fasterrcnn_resnet50_fpn_v2', # Torchvision COCO pretrained
-    'fasterrcnn_resnet50_fpn',  # Torchvision COCO pretrained
-    'fasterrcnn_resnet101',
-    'fasterrcnn_resnet152',
-    'fasterrcnn_squeezenet1_0',
-    'fasterrcnn_squeezenet1_1_small_head',
-    'fasterrcnn_squeezenet1_1',
-    'fasterrcnn_vitdet',
-    'fasterrcnn_vitdet_tiny',
-    'fasterrcnn_mobilevit_xxs',
-    'fasterrcnn_regnet_y_400mf'
-]
-```
 
 ## Tutorials
 
