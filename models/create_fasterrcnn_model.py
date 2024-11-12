@@ -18,8 +18,8 @@ create_model = {
     'fasterrcnn_mini_darknet_nano_head': fasterrcnn_mini_darknet_nano_head.create_model,  # type: ignore
     'fasterrcnn_efficientnet_b0': fasterrcnn_efficientnet_b0.create_model,  # type: ignore
     'fasterrcnn_nano': fasterrcnn_nano.create_model,  # type: ignore
-    'fasterrcnn_resnet152': fasterrcnn_resnet152,  # type: ignore
-    'fasterrcnn_resnet50_fpn_v2': fasterrcnn_resnet50_fpn_v2,  # type: ignore
+    'fasterrcnn_resnet152': fasterrcnn_resnet152.create_model,  # type: ignore
+    'fasterrcnn_resnet50_fpn_v2': fasterrcnn_resnet50_fpn_v2.create_model,  # type: ignore
     'fasterrcnn_convnext_small': fasterrcnn_convnext_small.create_model,  # type: ignore
     'fasterrcnn_convnext_tiny': fasterrcnn_convnext_tiny.create_model,  # type: ignore
     'fasterrcnn_resnet101': fasterrcnn_resnet101.create_model,  # type: ignore
