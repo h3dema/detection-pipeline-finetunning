@@ -60,9 +60,11 @@ def coco_log(log_dir, stats):
         logger.debug('\n'*2) # DEBUG model so as not to print on console.
     # f.close()
 
+
 def set_summary_writer(log_dir):
     writer = SummaryWriter(log_dir=log_dir)
     return writer
+
 
 def tensorboard_loss_log(name, loss_np_arr, writer, epoch):
     """
@@ -70,6 +72,7 @@ def tensorboard_loss_log(name, loss_np_arr, writer, epoch):
     is the same as the training result save directory.
     """
     writer.add_scalar(name, loss_np_arr[-1], epoch)
+
 
 def tensorboard_map_log(name, val_map_05, val_map, writer, epoch):
     writer.add_scalars(
@@ -80,6 +83,7 @@ def tensorboard_map_log(name, val_map_05, val_map, writer, epoch):
         },
         epoch
     )
+
 
 def create_log_csv(log_dir):
     cols = [
@@ -127,6 +131,7 @@ def csv_log(
         header=False
     )
 
+
 def overlay_on_canvas(bg, image):
     bg_copy = bg.copy()
     h, w = bg.shape[:2]
@@ -135,6 +140,7 @@ def overlay_on_canvas(bg, image):
     cx, cy = (h - h1) // 2, (w - w1) // 2
     bg_copy[cy:cy + h1, cx:cx + w1] = image
     return bg_copy * 255.
+
 
 def wandb_log(
     epoch_loss, 
@@ -217,6 +223,7 @@ def wandb_log(
                 overlay_on_canvas(bg, val_pred_image[i-1])
             ])
         wandb.log({'predictions': [wandb.Image(log_image)]})
+
 
 def wandb_save_model(model_dir):
     """

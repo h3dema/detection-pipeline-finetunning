@@ -120,13 +120,13 @@ def parse_opt(default_config=None):
     )
     # Wandb    
     parser.add_argument(
-        '-wd', '--enable-wandb',
+        '-we', '--enable-wandb',
         dest="disable_wandb",
         action='store_false',
         help='use wandb'
     )
     parser.add_argument(
-        '-we', '--disable-wandb',
+        '-wd', '--disable-wandb',
         dest="disable_wandb",
         action='store_true',
         help='do not use wandb'

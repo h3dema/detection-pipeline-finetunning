@@ -13,7 +13,9 @@ from utils.general import (
     yaml_save, init_seeds, EarlyStopping
 )
 from utils.logging import (
-    set_log, coco_log,
+    set_log,
+    log,
+    coco_log,
     set_summary_writer,
     tensorboard_loss_log,
     tensorboard_map_log,
@@ -67,6 +69,10 @@ def main(args, dataset_handler):
 
     yaml_save(file_path=os.path.join(OUT_DIR, 'opt.yaml'), data=args)
 
+    # write configuration to the output
+    log("Config:", args)
+    log("OUT_DIR:", OUT_DIR)
+    
     # Model configurations
     IMAGE_SIZE = args['imgsz']
 
@@ -404,4 +410,3 @@ def main(args, dataset_handler):
     # Save models to Weights&Biases.
     if not args['disable_wandb']:
         wandb_save_model(OUT_DIR)
-

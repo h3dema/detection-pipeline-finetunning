@@ -24,6 +24,7 @@ def init_seeds(seed=0, deterministic=False):
     #     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
     #     os.environ['PYTHONHASHSEED'] = str(seed)
 
+
 # this class keeps track of the training and validation loss values...
 # ... and helps to get the average for each epoch as well
 class Averager:
@@ -45,6 +46,7 @@ class Averager:
     def reset(self):
         self.current_total = 0.0
         self.iterations = 0.0
+
 
 class SaveBestModel:
     """
@@ -76,6 +78,7 @@ class SaveBestModel:
                 'data': config,
                 'model_name': model_name
                 }, f"{OUT_DIR}/best_model.pth")
+
 
 def show_tranformed_image(train_loader, device, classes, colors):
     """
@@ -132,6 +135,7 @@ def show_tranformed_image(train_loader, device, classes, colors):
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
+            
 def save_loss_plot(
     OUT_DIR, 
     train_loss_list, 
@@ -152,6 +156,7 @@ def save_loss_plot(
     train_ax.set_ylabel(y_label)
     figure_1.savefig(f"{OUT_DIR}/{save_name}.png")
     print('SAVING PLOTS COMPLETE...')
+
 
 def save_mAP(OUT_DIR, map_05, map):
     """
@@ -195,6 +200,7 @@ def visualize_mosaic_images(boxes, labels, image_resized, classes):
     cv2.imshow('Mosaic', image_resized)
     cv2.waitKey(0)
 
+    
 def save_model(
     epoch, 
     model, 
@@ -313,6 +319,7 @@ def set_infer_dir():
     new_dir_name = f"outputs/inference/res_{next_dir_num}"
     os.makedirs(new_dir_name, exist_ok=True)
     return new_dir_name
+
 
 def set_training_dir(dir_name=None, project_dir=None):
     """
