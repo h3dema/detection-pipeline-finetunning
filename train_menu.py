@@ -4,6 +4,17 @@ from models.create_detection_model import create_model
 
 def parse_opt(default_config=None):
     # Construct the argument parser.
+    """
+    Parse command line arguments.
+
+    Args:
+        default_config (str, optional): default configuration file path.
+            Defaults to None.
+
+    Returns:
+        dict: parsed command line arguments.
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-m', '--model',
@@ -118,7 +129,7 @@ def parse_opt(default_config=None):
         type=str,
         help='url used to set up the distributed training'
     )
-    # Wandb    
+    # Wandb
     parser.add_argument(
         '-we', '--enable-wandb',
         dest="disable_wandb",

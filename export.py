@@ -56,6 +56,27 @@ def parse_opt():
 
 
 def main(args):
+    """
+    Exports a PyTorch model to ONNX format.
+
+    Args:
+        args (dict): A dictionary of command-line arguments including:
+            - 'weights' (str): Path to the trained checkpoint weights.
+            - 'device' (torch.device): Computation device.
+            - 'data' (str, optional): Path to the data config file.
+            - 'out' (str): Output model name, e.g. model.onnx.
+            - 'width' (int): ONNX model input width.
+            - 'height' (int): ONNX model input height.
+            - 'model' (str): Model name to build from arguments.
+
+    The function performs the following steps:
+        1. Creates an output directory if it doesn't exist.
+        2. Loads data configurations from a file, if provided, or from model checkpoint.
+        3. Loads the model checkpoint, builds the model using the specified or default model name,
+           and loads its state dictionary.
+        4. Sets the model to evaluation mode and creates a random input tensor of specified size.
+        5. Exports the model to ONNX format with specified input and output names and dynamic axes.
+    """
     OUT_DIR = 'weights'
     if not os.path.exists(OUT_DIR):
         os.makedirs(OUT_DIR)

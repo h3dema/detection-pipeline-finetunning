@@ -20,6 +20,7 @@ from utils.transforms import (
 
 # the dataset class
 class CustomDataset(Dataset):
+
     def __init__(
         self,
         images_path,
@@ -32,6 +33,36 @@ class CustomDataset(Dataset):
         mosaic=1.0,
         square_training=False
     ):
+        """
+        Initializes the CustomDataset object.
+
+        Args:
+            images_path (str): The path to the directory containing images.
+            labels_path (str): The path to the directory containing label files.
+            img_size (int): The size to which images will be resized.
+            classes (list): A list of class names.
+            transforms (callable, optional): A function/transform to apply to the images.
+            use_train_aug (bool, optional): Whether to use training augmentations. Default is False.
+            train (bool, optional): If True, the dataset will use training data. Default is False.
+            mosaic (float, optional): Mosaic augmentation probability. Default is 1.0.
+            square_training (bool, optional): If True, images will be square during training. Default is False.
+
+        Attributes:
+            transforms (callable): The transform to be applied to the images.
+            use_train_aug (bool): Whether to use training augmentations.
+            images_path (str): Path to the images directory.
+            labels_path (str): Path to the labels directory.
+            img_size (int): Image size for resizing.
+            classes (list): List of class names.
+            train (bool): Indicates if training data is used.
+            square_training (bool): Indicates if images are square during training.
+            mosaic_border (list): Border size for mosaic augmentation.
+            image_file_types (list): Supported image file types.
+            all_image_paths (list): List of all image paths.
+            log_annot_issue_x (bool): Log annotation issue on x-axis.
+            mosaic (float): Mosaic augmentation probability.
+            log_annot_issue_y (bool): Log annotation issue on y-axis.
+        """
         self.transforms = transforms
         self.use_train_aug = use_train_aug
         self.images_path = images_path
@@ -50,6 +81,17 @@ class CustomDataset(Dataset):
         self.load_dataset()
 
     def load_dataset(self) -> None:
+        """
+        Loads the dataset into the dataset object.
+
+        The dataset is loaded as follows:
+
+        1. Get all the image paths in sorted order.
+        2. Get all the annotation paths.
+        3. Get all the images and sort them.
+        4. Remove all annotations and images when no object is present.
+        """
+
         # get all the image paths in sorted order
         for file_type in self.image_file_types:
             self.all_image_paths.extend(glob.glob(os.path.join(self.images_path, file_type)))
@@ -314,8 +356,27 @@ class CustomDataset(Dataset):
 
     def load_cutmix_image_and_boxes(self, index, resize_factor=512):
         """
+        Generates a CutMix augmented image and corresponding bounding boxes.
+
+        This function creates a mosaic of images by combining four randomly selected images from the dataset,
+        including the one at the specified index. The resulting image is a combination of these four images,
+        and the function adjusts the bounding boxes to fit the new mosaic image.
         Adapted from: https://www.kaggle.com/shonenkov/oof-evaluation-mixup-efficientdet
+
+        Args:
+            index (int): The index of the primary image to be included in the CutMix operation.
+            resize_factor (int, optional): The desired size to which the final mosaic image will be resized. Default is 512.
+
+        Returns:
+            tuple: A tuple containing:
+                - result_image (numpy.ndarray): The CutMix augmented image.
+                - result_boxes (torch.Tensor): The bounding boxes for the objects in the augmented image.
+                - final_classes (torch.Tensor): The class labels for each bounding box.
+                - area: The area of the bounding boxes (not transformed).
+                - iscrowd: A boolean indicating if the image contains crowd instances.
+                - dims: The dimensions of the original image.
         """
+
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y
         indices = [index] + [random.randint(0, len(self.all_images) - 1) for _ in range(3)]
@@ -469,8 +530,31 @@ def collate_fn(batch):
 
 
 class DatasetHandler():
+    """
+    The `DatasetHandler` class is responsible for loading and preparing datasets for training and validation.
+    It takes in a configuration file and image size as input and provides methods to create datasets and data loaders.
+
+    """
 
     def __init__(self, args):
+        """
+        Constructor for the dataset handler.
+
+        Args:
+            args (dict): A dictionary of arguments. Must contain the following keys:
+                'config' (str): The path to the yaml configuration file containing the data configurations.
+                'imgsz' (int): The size of the images to be resized to.
+
+        Attributes:
+            data_configs (dict): The data configurations loaded from the yaml file.
+            train_dir_images (str): The path to the training images.
+            train_dir_labels (str): The path to the training labels.
+            valid_dir_images (str): The path to the validation images.
+            valid_dir_labels (str): The path to the validation labels.
+            img_size (int): The size of the images to be resized to.
+            classes (list): The list of class names.
+        """
+
         # Load the data configurations
         with open(args['config']) as file:
             self.data_configs = yaml.safe_load(file)
@@ -479,24 +563,53 @@ class DatasetHandler():
         self.train_dir_labels = os.path.normpath(self.data_configs['TRAIN_DIR_LABELS'])
         self.valid_dir_images = os.path.normpath(self.data_configs['VALID_DIR_IMAGES'])
         self.valid_dir_labels = os.path.normpath(self.data_configs['VALID_DIR_LABELS'])
-        
-        self.img_size = args['imgsz']        
+
+        self.img_size = args['imgsz']
         self.classes = self.data_configs['CLASSES']
 
     @property
     def save_valid_prediction_images(self):
+        """
+        Property that indicates whether to save the predictions of the validation set.
+
+        This property retrieves the 'SAVE_VALID_PREDICTION_IMAGES' setting from the data configurations.
+        If the setting is not specified, it defaults to False.
+
+        Returns:
+            bool: True if validation prediction images should be saved, False otherwise.
+        """
         return self.data_configs.get('SAVE_VALID_PREDICTION_IMAGES', False)
-        
+
     @property
     def num_classes(self):
+        """
+        Property that returns the number of classes in the dataset.
+
+        This property retrieves the 'NC' setting from the data configurations.
+
+        Returns:
+            int: The number of classes in the dataset.
+        """
         return self.data_configs['NC']
-            
+
     # Prepare the final datasets and data loaders.
     def create_train_dataset(self,
         use_train_aug=False,
         mosaic=1.0,
         square_training=False
     ) -> Dataset:
+        """
+        Creates a training dataset with optional augmentations and configurations.
+
+        Args:
+            use_train_aug (bool, optional): If True, apply training augmentations. Default is False.
+            mosaic (float, optional): Probability of applying mosaic augmentation. Default is 1.0.
+            square_training (bool, optional): If True, ensure images are square during training. Default is False.
+
+        Returns:
+            Dataset: The configured training dataset.
+        """
+
         train_dataset = CustomDataset(
             self.train_dir_images,
             self.train_dir_labels,
@@ -509,8 +622,17 @@ class DatasetHandler():
             square_training=square_training
         )
         return train_dataset
-    
+
     def create_valid_dataset(self, square_training=False) -> Dataset:
+        """
+        Creates a validation dataset with optional square training configuration.
+
+        Args:
+            square_training (bool, optional): If True, ensure images are square during validation. Default is False.
+
+        Returns:
+            Dataset: The configured validation dataset.
+        """
         valid_dataset = CustomDataset(
             self.valid_dir_images,
             self.valid_dir_labels,
@@ -520,14 +642,26 @@ class DatasetHandler():
             train=False,
             square_training=square_training
         )
-        return valid_dataset    
-    
+        return valid_dataset
+
     def create_train_loader(self,
         train_dataset: Dataset,
-        batch_size: int, 
+        batch_size: int,
         num_workers=0,
         batch_sampler=None
     ) -> DataLoader:
+        """
+        Creates a DataLoader for the training dataset.
+
+        Args:
+            train_dataset (Dataset): The dataset to load training data from.
+            batch_size (int): Number of samples per batch to load.
+            num_workers (int, optional): Number of subprocesses to use for data loading. Defaults to 0.
+            batch_sampler (Sampler or Iterable, optional): Defines the strategy to draw samples from the dataset. Defaults to None.
+
+        Returns:
+            DataLoader: A DataLoader object for the training dataset.
+        """
         train_loader = DataLoader(
             train_dataset,
             batch_size=batch_size,
@@ -536,13 +670,25 @@ class DatasetHandler():
             collate_fn=collate_fn,
             sampler=batch_sampler
         )
-        return train_loader 
-    
+        return train_loader
+
     def create_valid_loader(self,
-        valid_dataset: Dataset, 
-        batch_size:int, 
+        valid_dataset: Dataset,
+        batch_size:int,
         num_workers=0, batch_sampler=None
     ) -> DataLoader:
+        """
+        Creates a DataLoader for the validation dataset.
+
+        Args:
+            valid_dataset (Dataset): The dataset to load validation data from.
+            batch_size (int): Number of samples per batch to load.
+            num_workers (int, optional): Number of subprocesses to use for data loading. Defaults to 0.
+            batch_sampler (Sampler or Iterable, optional): Defines the strategy to draw samples from the dataset. Defaults to None.
+
+        Returns:
+            DataLoader: A DataLoader object for the validation dataset.
+        """
         valid_loader = DataLoader(
             valid_dataset,
             batch_size=batch_size,

@@ -38,7 +38,14 @@ def collect_all_images(dir_test):
     return test_images
 
 
-def parse_opt():
+def menu():
+    """
+    Function to parse command line arguments.
+
+    Returns:
+        args: Dictionary containing all the command line arguments.
+    """
+
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -133,6 +140,23 @@ def parse_opt():
 
 
 def main(args):
+    """
+    Inference script for object detection models.
+
+    Arguments:
+        --input, Path to the input image or directory containing images.
+        --weights, Path to the weights file of the model.
+        --data, Path to the config YAML file of the model.
+        --output, Path to the output directory where images and CSV files will be saved.
+        --show, Whether to show the output images in a window.
+        --mpl-show, Whether to show the output images using matplotlib.
+        --classes, Whether to select only specific classes for visualization. Classes can be specified by their index.
+        --square-img, Whether to resize the image to a square shape.
+        --track, Whether to perform tracking in video mode.
+        --log-json, Whether to save a JSON log file in the output directory.
+        --table, Whether to save a CSV file in the output directory summarizing the predicted boxes.
+    """
+
     # For same annotation colors each time.
     np.random.seed(42)
 
@@ -309,5 +333,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = parse_opt()
+    args = menu()
     main(args)
