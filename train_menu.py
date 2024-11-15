@@ -3,7 +3,6 @@ from models.create_detection_model import create_model
 
 
 def parse_opt(default_config=None):
-    # Construct the argument parser.
     """
     Parse command line arguments.
 
@@ -15,6 +14,7 @@ def parse_opt(default_config=None):
         dict: parsed command line arguments.
     """
 
+    # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-m', '--model',

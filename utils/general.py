@@ -11,6 +11,17 @@ from pathlib import Path
 plt.style.use('ggplot')
 
 def init_seeds(seed=0, deterministic=False):
+    """
+    Initialize random number generator (RNG) seeds for reproducibility.
+
+    Args:
+        seed (int, optional): Seed to use. Defaults to 0.
+        deterministic (bool, optional): Set to True for deterministic results. Defaults to False.
+
+    Notes:
+        https://pytorch.org/docs/stable/notes/randomness.html
+    """
+
     # Initialize random number generator (RNG) seeds https://pytorch.org/docs/stable/notes/randomness.html
     random.seed(seed)
     np.random.seed(seed)
@@ -28,46 +39,100 @@ def init_seeds(seed=0, deterministic=False):
 # this class keeps track of the training and validation loss values...
 # ... and helps to get the average for each epoch as well
 class Averager:
+    """
+        The Averager class keeps track of a running total and number of iterations, allowing you to calculate the average of a sequence of values.
+    """
+
     def __init__(self):
+        """
+        Initialize the Averager.
+
+        The Averager keeps track of the current total and the number of
+        iterations. It can be used to calculate the average of a sequence
+        of values.
+
+        Attributes:
+            current_total (float): The current total of the values.
+            iterations (float): The number of iterations, i.e., the number of
+                values that have been added to the total.
+        """
         self.current_total = 0.0
         self.iterations = 0.0
-        
+
     def send(self, value):
+        """
+        Add a value to the total, incrementing the number of iterations.
+
+        Args:
+            value (float): The value to be added to the total.
+        """
         self.current_total += value
         self.iterations += 1
-    
+
     @property
     def value(self):
+        """
+        Calculate the average of the values that have been added to the Averager.
+
+        Returns 0 if no values have been added.
+
+        Returns:
+            float: The average of the values.
+        """
+
         if self.iterations == 0:
             return 0
         else:
             return 1.0 * self.current_total / self.iterations
-    
+
     def reset(self):
+        """
+        Reset the current total and iterations to zero.
+
+        This method is used to clear the accumulated values and start fresh.
+        It sets both the current total and the number of iterations back to 0.0.
+        """
         self.current_total = 0.0
         self.iterations = 0.0
 
 
 class SaveBestModel:
     """
-    Class to save the best model while training. If the current epoch's 
+    Class to save the best model while training. If the current epoch's
     validation mAP @0.5:0.95 IoU higher than the previous highest, then save the
     model state.
     """
     def __init__(
         self, best_valid_map=float(0)
     ):
+        """
+        Initialize the SaveBestModel class with the best validation mAP.
+
+        Args:
+            best_valid_map (float): The initial best validation mAP value. Defaults to 0.
+        """
         self.best_valid_map = best_valid_map
-        
+
     def __call__(
-        self, 
-        model, 
-        current_valid_map, 
-        epoch, 
+        self,
+        model,
+        current_valid_map,
+        epoch,
         OUT_DIR,
         config,
         model_name
     ):
+        """
+        Save the model if the current validation mAP is higher than the best validation mAP.
+
+        Args:
+            model (nn.Module): The model to be saved.
+            current_valid_map (float): The current validation mAP.
+            epoch (int): The current epoch.
+            OUT_DIR (str): The directory where the model is saved.
+            config (dict): The configuration of the experiment.
+            model_name (str): The name of the model.
+        """
         if current_valid_map > self.best_valid_map:
             self.best_valid_map = current_valid_map
             print(f"\nBEST VALIDATION mAP: {self.best_valid_map}")
@@ -81,12 +146,29 @@ class SaveBestModel:
 
 
 def show_tranformed_image(train_loader, device, classes, colors):
+
     """
-    This function shows the transformed images from the `train_loader`.
-    Helps to check whether the tranformed images along with the corresponding
-    labels are correct or not.
+    Display transformed images from the training loader with annotated bounding boxes and labels.
+
+    This function iterates over the training DataLoader, transforms the images and targets,
+    and displays the first two transformed images with bounding boxes and labels for each object.
+    The purpose is to visually verify if the transformations and labels applied to the images
+    are correct.
+
+    Args:
+        train_loader (DataLoader): The DataLoader containing the training dataset.
+        device (torch.device): The device to which the images and targets should be moved.
+        classes (list): A list of class names corresponding to the labels.
+        colors (list): A list of colors to be used for the bounding boxes of each class.
+
+    Returns:
+        None
     """
+
     if len(train_loader) > 0:
+        # This function shows the transformed images from the `train_loader`.
+        # Helps to check whether the tranformed images along with the corresponding
+        # labels are correct or not.
         for i in range(2):
             images, targets = next(iter(train_loader))
             images = list(image.to(device) for image in images)
@@ -109,43 +191,43 @@ def show_tranformed_image(train_loader, device, classes, colors):
                     sample,
                     p1,
                     p2,
-                    color, 
+                    color,
                     2,
                     cv2.LINE_AA
                 )
                 w, h = cv2.getTextSize(
-                    class_name, 
-                    0, 
-                    fontScale=lw / 3, 
+                    class_name,
+                    0,
+                    fontScale=lw / 3,
                     thickness=tf
                 )[0]  # text width, height
                 outside = p1[1] - h >= 3
                 p2 = p1[0] + w, p1[1] - h - 3 if outside else p1[1] + h + 3
                 cv2.putText(
-                    sample, 
+                    sample,
                     class_name,
                     (p1[0], p1[1] - 5 if outside else p1[1] + h + 2),
-                    cv2.FONT_HERSHEY_SIMPLEX, 
-                    0.8, 
-                    color, 
-                    2, 
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8,
+                    color,
+                    2,
                     cv2.LINE_AA
                 )
             cv2.imshow('Transformed image', sample)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-            
+
 def save_loss_plot(
-    OUT_DIR, 
-    train_loss_list, 
+    OUT_DIR,
+    train_loss_list,
     x_label='iterations',
     y_label='train loss',
     save_name='train_loss_iter'
 ):
     """
     Function to save both train loss graph.
-    
+
     :param OUT_DIR: Path to save the graphs.
     :param train_loss_list: List containing the training loss values.
     """
@@ -169,11 +251,11 @@ def save_mAP(OUT_DIR, map_05, map):
     figure = plt.figure(figsize=(10, 7), num=1, clear=True)
     ax = figure.add_subplot()
     ax.plot(
-        map_05, color='tab:orange', linestyle='-', 
+        map_05, color='tab:orange', linestyle='-',
         label='mAP@0.5'
     )
     ax.plot(
-        map, color='tab:red', linestyle='-', 
+        map, color='tab:red', linestyle='-',
         label='mAP@0.5:0.95'
     )
     ax.set_xlabel('Epochs')
@@ -183,6 +265,28 @@ def save_mAP(OUT_DIR, map_05, map):
 
 
 def visualize_mosaic_images(boxes, labels, image_resized, classes):
+    """
+    Visualize a mosaic image with bounding boxes and class labels.
+
+    This function takes a resized mosaic image and overlays bounding boxes
+    and class labels on it based on the provided boxes and labels. The
+    annotated image is then displayed using OpenCV.
+
+    Parameters
+    ----------
+    boxes : list of list
+        A list containing bounding box coordinates in the format [x1, y1, x2, y2].
+    labels : list of int
+        A list of label indices corresponding to each bounding box.
+    image_resized : numpy.ndarray
+        The resized image on which annotations will be drawn.
+    classes : list of str
+        A list of class names corresponding to the label indices.
+
+    Returns
+    -------
+    None
+    """
     print(boxes)
     print(labels)
     image_resized = cv2.cvtColor(image_resized, cv2.COLOR_RGB2BGR)
@@ -193,20 +297,20 @@ def visualize_mosaic_images(boxes, labels, image_resized, classes):
                     (int(box[0]), int(box[1])),
                     (int(box[2]), int(box[3])),
                     color, 2)
-        cv2.putText(image_resized, classes[classn], 
+        cv2.putText(image_resized, classes[classn],
                     (int(box[0]), int(box[1]-5)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color,
                     2, lineType=cv2.LINE_AA)
     cv2.imshow('Mosaic', image_resized)
     cv2.waitKey(0)
 
-    
+
 def save_model(
-    epoch, 
-    model, 
-    optimizer, 
+    epoch,
+    model,
+    optimizer,
     train_loss_list,
-    train_loss_list_epoch, 
+    train_loss_list_epoch,
     val_map,
     val_map_05,
     OUT_DIR,
@@ -239,10 +343,10 @@ def save_model(
                 'model_name': model_name
                 }, f"{OUT_DIR}/last_model.pth")
 
-    
+
 def save_model_state(model, OUT_DIR, config, model_name):
     """
-    Saves the model state dictionary only. Has a smaller size compared 
+    Saves the model state dictionary only. Has a smaller size compared
     to the the saved model with all other parameters and dictionaries.
     Preferable for inference and sharing.
 
@@ -257,6 +361,18 @@ def save_model_state(model, OUT_DIR, config, model_name):
 
 
 def denormalize(x, mean=None, std=None):
+    """
+    Denormalizes the input tensor x by multiplying each element by corresponding std and adding corresponding mean.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape [B, 3, H, W].
+        mean (torch.Tensor): Mean tensor of shape [3].
+        std (torch.Tensor): Std tensor of shape [3].
+
+    Returns:
+        torch.Tensor: Denormalized tensor of shape [B, 3, H, W].
+    """
+
     # Shape of x here should be [B, 3, H, W].
     for t, m, s in zip(x, mean, std):
         t.mul_(s).add_(m)
@@ -267,6 +383,7 @@ def denormalize(x, mean=None, std=None):
 def save_validation_results(images, detections, counter, out_dir, classes, colors):
     """
     Function to save validation results.
+
     :param images: All the images from the current batch.
     :param detections: All the detection results.
     :param counter: Step counter for saving with unique ID.
@@ -292,24 +409,24 @@ def save_validation_results(images, detections, counter, out_dir, classes, color
             class_name = pred_classes[j]
             color = colors[classes.index(class_name)]
             cv2.rectangle(
-                image, 
+                image,
                 (int(box[0]), int(box[1])),
                 (int(box[2]), int(box[3])),
                 color, 2, lineType=cv2.LINE_AA
             )
-            cv2.putText(image, class_name, 
+            cv2.putText(image, class_name,
                     (int(box[0]), int(box[1]-5)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color,
                     2, lineType=cv2.LINE_AA)
         cv2.imwrite(f"{out_dir}/image_{i}_{counter}.jpg", image*255.)
         image_list.append(image[:, :, ::-1])
     return image_list
 
-    
+
 def set_infer_dir():
     """
     This functions counts the number of inference directories already present
-    and creates a new one in `outputs/inference/`. 
+    and creates a new one in `outputs/inference/`.
     And returns the directory path.
     """
     if not os.path.exists('outputs/inference'):
@@ -324,7 +441,7 @@ def set_infer_dir():
 def set_training_dir(dir_name=None, project_dir=None):
     """
     This functions counts the number of training directories already present
-    and creates a new one in `outputs/training/`. 
+    and creates a new one in `outputs/training/`.
     And returns the directory path.
     """
     if project_dir != None:
@@ -343,12 +460,26 @@ def set_training_dir(dir_name=None, project_dir=None):
         os.makedirs(new_dir_name, exist_ok=True)
         return new_dir_name
 
-    
+
 def yaml_save(file_path=None, data={}):
+    """
+    Save data to a YAML file.
+
+    Converts any Path objects within the data dictionary to strings
+    before saving to ensure compatibility with YAML format.
+
+    Args:
+        file_path (str): The path to the file where data will be saved.
+        data (dict): The data to be saved in YAML format. Keys are strings,
+                     and values can be any serializable data type.
+
+    Returns:
+        None
+    """
     with open(file_path, 'w') as f:
         yaml.safe_dump(
-            {k: str(v) if isinstance(v, Path) else v for k, v in data.items()}, 
-            f, 
+            {k: str(v) if isinstance(v, Path) else v for k, v in data.items()},
+            f,
             sort_keys=False
         )
 
@@ -360,7 +491,7 @@ class EarlyStopping():
     """
     def __init__(self, patience=10, min_delta=0):
         """
-        :param patience: how many epochs to wait before stopping mAP 
+        :param patience: how many epochs to wait before stopping mAP
                 is not improving
         :param min_delta: minimum difference between new mAP and old mAP for
                new mAP to be considered as an improvement
@@ -372,6 +503,15 @@ class EarlyStopping():
         self.early_stop = False
 
     def __call__(self, map):
+        """
+        Check if the model should be stopped based on the mAP value.
+
+        Args:
+            map (float): The mAP value to check.
+
+        Returns:
+            None
+        """
         if self.best_map == None:
             self.best_map = map
         elif map - self.best_map > self.min_delta:

@@ -13,7 +13,23 @@ import argparse
 import yaml
 
 
-if __name__ == '__main__':
+def parse_opt():
+    """
+    Parses command-line arguments for evaluating a trained model.
+
+    Returns:
+        dict: A dictionary of parsed command-line arguments including:
+            - data (str): Path to the data configuration file.
+            - model (str): Name of the model to use for evaluation.
+            - weights (str): Path to the trained checkpoint weights.
+            - imgsz (int): Image size to feed to the network.
+            - workers (int): Number of workers for data processing/transforms/augmentations.
+            - batch (int): Batch size to load the data.
+            - device (torch.device): Computation/training device to use.
+            - verbose (bool): Flag to show class-wise mAP.
+            - square_training (bool): Flag to resize images to square shape for training.
+    """
+
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -22,7 +38,9 @@ if __name__ == '__main__':
         help='(optional) path to the data config file'
     )
     parser.add_argument(
-        '-m', '--model', default='fasterrcnn_resnet50_fpn',
+        '-m', '--model',
+        default='fasterrcnn_resnet50_fpn',
+        choices=create_model.keys(),
         help='name of the model'
     )
     parser.add_argument(
@@ -47,6 +65,13 @@ if __name__ == '__main__':
         help='computation/training device, default is GPU if GPU present'
     )
     args = vars(parser.parse_args())
+
+    return args
+
+
+if __name__ == '__main__':
+    args = parse_opt()
+
 
     # Load the data configurations
     with open(args['config']) as file:

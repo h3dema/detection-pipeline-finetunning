@@ -2,14 +2,37 @@ import numpy as np
 import cv2
 
 def convert_detections(
-    outputs, 
-    detection_threshold, 
+    outputs,
+    detection_threshold,
     classes,
     args
 ):
     """
-    Return the bounding boxes, scores, classes names, and class IDs.
+    Convert raw detection outputs to bounding boxes, scores, class names, and class IDs.
+
+    Parameters
+    ----------
+    outputs : List of dictionaries
+        Raw detection outputs from the model.
+    detection_threshold : float
+        Minimum score above which the detections are considered.
+    classes : List of strings
+        Class names.
+    args : Dict
+        Arguments dictionary.
+
+    Returns
+    -------
+    draw_boxes : numpy.ndarray
+        Bounding boxes to be drawn on the image.
+    pred_classes : List of strings
+        Class names of the detections.
+    scores : numpy.ndarray
+        Confidence scores of the detections.
+    class_ids : torch.Tensor
+        Class IDs of the detections.
     """
+
     boxes = outputs[0]['boxes'].data.numpy()
     scores = outputs[0]['scores'].data.numpy()
 
@@ -31,11 +54,29 @@ def convert_detections(
         # Get all the predicited class names.
         pred_classes = [classes[i] for i in outputs[0]['labels'].cpu().numpy()]
 
+    # Return the bounding boxes, scores, classes names, and class IDs.
     return draw_boxes, pred_classes, scores, outputs[0]['labels'][:len(draw_boxes)]
 
 def convert_pre_track(
     draw_boxes, pred_classes, scores
 ):
+    """
+    Convert raw detections to DeepSORT real-time format.
+
+    Parameters
+    ----------
+    draw_boxes : numpy.ndarray
+        Bounding boxes to be drawn on the image.
+    pred_classes : List of strings
+        Class names of the detections.
+    scores : numpy.ndarray
+        Confidence scores of the detections.
+
+    Returns
+    -------
+    final_preds : List
+        List of tuples, where each tuple contains ([x, y, w, h], score, label_string).
+    """
     final_preds = []
     for i, box in enumerate(draw_boxes):
         # Append ([x, y, w, h], score, label_string). For deep sort real-time.
@@ -51,6 +92,23 @@ def convert_pre_track(
 def convert_post_track(
     tracks
 ):
+    """
+    Convert the DeepSORT real-time output to bounding boxes, scores, class names, and class IDs.
+
+    Parameters
+    ----------
+    tracks : List of deepsort_realtime.deepsort_tracker.Stroke
+        The output from the DeepSORT tracker.
+
+    Returns
+    -------
+    draw_boxes : List of numpy.ndarray
+        Bounding boxes to be drawn on the image.
+    pred_classes : List of strings
+        Class names of the detections.
+    scores : List of floats
+        Confidence scores of the detections.
+    """
     draw_boxes, pred_classes, scores, track_id = [], [], [], []
     for track in tracks:
         if not track.is_confirmed():
@@ -66,19 +124,46 @@ def convert_post_track(
     return draw_boxes, pred_classes, scores
 
 def inference_annotations(
-    draw_boxes, 
-    pred_classes, 
-    scores, 
+    draw_boxes,
+    pred_classes,
+    scores,
     classes,
-    colors, 
-    orig_image, 
-    image, 
+    colors,
+    orig_image,
+    image,
     args
 ):
+    """
+    Annotate an image with bounding boxes, class names, and scores.
+
+    Parameters
+    ----------
+    draw_boxes : list of list
+        List of bounding box coordinates in the format [x1, y1, x2, y2].
+    pred_classes : list of str
+        List of predicted class names corresponding to each bounding box.
+    scores : list of float
+        List of confidence scores for each bounding box.
+    classes : list of str
+        List of all possible class names.
+    colors : list of tuple
+        List of colors for each class in BGR format.
+    orig_image : numpy.ndarray
+        The original image on which annotations will be drawn.
+    image : numpy.ndarray
+        The scaled image used for inference.
+    args : dict
+        Additional arguments that control the annotation process, such as tracking and label display.
+
+    Returns
+    -------
+    numpy.ndarray
+        The original image annotated with bounding boxes, class names, and scores.
+    """
     height, width, _ = orig_image.shape
     lw = max(round(sum(orig_image.shape) / 2 * 0.003), 2)  # Line width.
     tf = max(lw - 1, 1) # Font thickness.
-    
+
     # Draw the bounding boxes and write the class name on top of it.
     for j, box in enumerate(draw_boxes):
         p1 = (int(box[0]/image.shape[1]*width), int(box[1]/image.shape[0]*height))
@@ -91,7 +176,7 @@ def inference_annotations(
         cv2.rectangle(
             orig_image,
             p1, p2,
-            color=color, 
+            color=color,
             thickness=lw,
             lineType=cv2.LINE_AA
         )
@@ -99,30 +184,30 @@ def inference_annotations(
             # For filled rectangle.
             final_label = class_name + ' ' + str(round(scores[j], 2))
             w, h = cv2.getTextSize(
-                final_label, 
-                cv2.FONT_HERSHEY_SIMPLEX, 
-                fontScale=lw / 3, 
+                final_label,
+                cv2.FONT_HERSHEY_SIMPLEX,
+                fontScale=lw / 3,
                 thickness=tf
             )[0]  # text width, height
             w = int(w - (0.20 * w))
             outside = p1[1] - h >= 3
             p2 = p1[0] + w, p1[1] - h - 3 if outside else p1[1] + h + 3
             cv2.rectangle(
-                orig_image, 
-                p1, 
-                p2, 
-                color=color, 
-                thickness=-1, 
+                orig_image,
+                p1,
+                p2,
+                color=color,
+                thickness=-1,
                 lineType=cv2.LINE_AA
-            )  
+            )
             cv2.putText(
-                orig_image, 
-                final_label, 
+                orig_image,
+                final_label,
                 (p1[0], p1[1] - 5 if outside else p1[1] + h + 2),
-                cv2.FONT_HERSHEY_SIMPLEX, 
-                fontScale=lw / 3.8, 
-                color=(255, 255, 255), 
-                thickness=tf, 
+                cv2.FONT_HERSHEY_SIMPLEX,
+                fontScale=lw / 3.8,
+                color=(255, 255, 255),
+                thickness=tf,
                 lineType=cv2.LINE_AA
             )
     return orig_image
@@ -137,26 +222,50 @@ def draw_text(
         text_color=(0, 255, 0),
         text_color_bg=(0, 0, 0),
     ):
-        offset = (5, 5)
-        x, y = pos
-        text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
-        text_w, text_h = text_size
-        rec_start = tuple(x - y for x, y in zip(pos, offset))
-        rec_end = tuple(x + y for x, y in zip((x + text_w, y + text_h), offset))
-        cv2.rectangle(img, rec_start, rec_end, text_color_bg, -1)
-        cv2.putText(
-            img,
-            text,
-            (x, int(y + text_h + font_scale - 1)),
-            font,
-            font_scale,
-            text_color,
-            font_thickness,
-            cv2.LINE_AA,
-        )
-        return img
+    """Draws text onto an image.
+
+    Args:
+        img (ndarray): The image onto which the text is drawn.
+        text (str): The text to be drawn.
+        font (int): The font to use. Defaults to cv2.FONT_HERSHEY_SIMPLEX.
+        pos (tuple): The position at which to draw the text. Defaults to (0, 0).
+        font_scale (float): The font scale factor. Defaults to 1.
+        font_thickness (int): The thickness of the font. Defaults to 2.
+        text_color (tuple): The color of the text. Defaults to (0, 255, 0).
+        text_color_bg (tuple): The background color of the text box. Defaults to (0, 0, 0).
+
+    Returns:
+        ndarray: The image with the text drawn onto it.
+    """
+    offset = (5, 5)
+    x, y = pos
+    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+    text_w, text_h = text_size
+    rec_start = tuple(x - y for x, y in zip(pos, offset))
+    rec_end = tuple(x + y for x, y in zip((x + text_w, y + text_h), offset))
+    cv2.rectangle(img, rec_start, rec_end, text_color_bg, -1)
+    cv2.putText(
+        img,
+        text,
+        (x, int(y + text_h + font_scale - 1)),
+        font,
+        font_scale,
+        text_color,
+        font_thickness,
+        cv2.LINE_AA,
+    )
+    return img
 
 def annotate_fps(orig_image, fps_text):
+    """Draws the given fps_text onto the given orig_image.
+
+    Args:
+        orig_image (ndarray): The image onto which the fps_text is drawn.
+        fps_text (str): The fps_text to be drawn.
+
+    Returns:
+        ndarray: The image with the fps_text drawn onto it.
+    """
     draw_text(
         orig_image,
         f"FPS: {fps_text:0.1f}",

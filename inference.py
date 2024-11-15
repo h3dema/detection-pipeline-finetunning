@@ -38,7 +38,7 @@ def collect_all_images(dir_test):
     return test_images
 
 
-def menu():
+def parse_opt():
     """
     Function to parse command line arguments.
 
@@ -65,6 +65,7 @@ def menu():
     parser.add_argument(
         '-m', '--model',
         default=None,
+        choices=create_model.keys(),
         help='name of the model'
     )
     parser.add_argument(
@@ -333,5 +334,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = menu()
+    args = parse_opt()
     main(args)

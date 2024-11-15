@@ -50,6 +50,13 @@ def collect_all_images(dir_test):
 
 
 def parse_opt():
+    """
+    Function to parse command line arguments.
+
+    Returns:
+        args: Dictionary containing all the command line arguments.
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-i',
@@ -68,9 +75,9 @@ def parse_opt():
         help='(optional) path to the data config file'
     )
     parser.add_argument(
-        '-m',
-        '--model',
+        '-m', '--model',
         default=None,
+        choices=create_model.keys(),
         help='name of the model'
     )
     parser.add_argument(
@@ -178,6 +185,27 @@ def parse_opt():
 
 
 def main(args):
+    """
+    SAHI image inference with torchvision-based models.
+
+    Args:
+        - input (str): Path to the input image or directory containing images.
+        - weights (str): Path to the weights file of the model.
+        - data (str): Path to the config YAML file of the model.
+        - output (str): Path to the output directory where images and CSV files will be saved.
+        - show (bool): Whether to show the output images in a window.
+        - mpl-show (bool): Whether to show the output images using matplotlib.
+        - classes (bool): Whether to select only specific classes for visualization. Classes can be specified by their index.
+        - square-img (bool): Whether to resize the image to a square shape.
+        - threshold (float): Confidence threshold for the detections.
+        - slice-height (int): Slice height for SAHI.
+        - slice-width (int): Slice width for SAHI.
+        - overlap-height-ratio (float): Overlap height ratio for SAHI.
+        - overlap-width-ratio (float): Overlap width ratio for SAHI.
+        - log-json (bool): Whether to save a JSON log file in the output directory.
+        - table (bool): Whether to save a CSV file in the output directory summarizing the predicted boxes.
+
+    """
     np.random.seed(42)
 
     data_configs = None
