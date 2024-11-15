@@ -222,9 +222,9 @@ def train_main(args, dataset_handler):
     momentum=args.get("momentum", 0.9)
     weight_decay=args.get("weight_decay", 0)
     if optimizer_name == "adam":
-        optimizer = torch.optim.Adam(params, lr=args['lr'], momentum=momentum, weight_decay=weight_decay, amsgrad=args.get("amsgrad", False))
+        optimizer = torch.optim.Adam(params, lr=args['lr'], weight_decay=weight_decay, betas=(0.9, 0.999), amsgrad=args.get("amsgrad", False))
     elif optimizer_name == "nadam":
-        optimizer = torch.optim.NAdam(params, lr=args['lr'], momentum=momentum, weight_decay=weight_decay, momentum_decay=args.get("momentum_decay", 0.004))
+        optimizer = torch.optim.NAdam(params, lr=args['lr'], weight_decay=weight_decay, betas=(0.9, 0.999), momentum_decay=args.get("momentum_decay", 0.004))
     elif optimizer_name == "sgd":
         optimizer = torch.optim.SGD(params, lr=args['lr'], momentum=momentum, nesterov=True)
     else:
