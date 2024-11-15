@@ -45,8 +45,15 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     return model
 
 
+#
+# Example
+# -------
+#
+# cd detection_pipeline_finetunning
+# python3 -m models.fasterrcnn_efficientnet_b0
+#
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
 

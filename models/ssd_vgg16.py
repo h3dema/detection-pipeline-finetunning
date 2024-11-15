@@ -12,6 +12,23 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def create_model(num_classes, pretrained=True, coco_model=False, WINDOW_SIZE = 500):
+    """
+    Create an SSD model with VGG16 backbone.
+
+    Args:
+        num_classes (int): The number of classes in the dataset.
+        pretrained (bool, optional): If True, use the weights from the
+            default pretrained model to initialize the VGG16 backbone.
+            Defaults to True.
+        coco_model (bool, optional): If True, use the class labels from the
+            COCO dataset. Defaults to False.
+        WINDOW_SIZE (int, optional): The size for the square window used
+            in the SSD detection model. Defaults to 500.
+
+    Returns:
+        SSD: The SSD model with VGG16 backbone.
+    """
+
     # Load the pretrained VGG16 backbone.
     model_backbone = torchvision.models.vgg16_bn(weights='DEFAULT')
 
@@ -29,7 +46,7 @@ def create_model(num_classes, pretrained=True, coco_model=False, WINDOW_SIZE = 5
         sizes=((32, 64, 128, 256, 512),),
         aspect_ratios=((0.5, 1.0, 2.0),)
     )
-    
+
     # Final SSD model.
     model = SSD(
         backbone=backbone,
@@ -41,6 +58,6 @@ def create_model(num_classes, pretrained=True, coco_model=False, WINDOW_SIZE = 5
 
 
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)

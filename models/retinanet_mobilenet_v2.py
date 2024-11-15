@@ -12,8 +12,22 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def create_model(num_classes, pretrained=True, coco_model=False, v2: bool = True):
-    # Load the pretrained ResNet50 backbone.
 
+    """
+    Creates a RetinaNet model with a MobileNetV2 backbone.
+
+    Args:
+        num_classes (int): The number of classes for the model's output layer.
+        pretrained (bool): If True, loads pretrained weights for the backbone.
+        coco_model (bool): Not used in this implementation.
+        v2 (bool): If True, uses the V2 version of the MobileNet model.
+
+    Returns:
+        RetinaNet: A RetinaNet model with a MobileNetV2 backbone, configured
+        with specified RPN anchor generator.
+    """
+
+    # Load the pretrained ResNet50 backbone.
     model_backbone = torchvision.models.mobilenet_v2(
         torchvision.models.MobileNet_V2_Weights.IMAGENET1K_V2 if v2 else torchvision.models.MobileNet_V2_Weights.IMAGENET1K_V1
     )
@@ -41,6 +55,6 @@ def create_model(num_classes, pretrained=True, coco_model=False, v2: bool = True
 
 
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)

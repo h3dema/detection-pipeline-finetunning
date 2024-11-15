@@ -9,6 +9,17 @@ from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
 
 def create_model(num_classes, pretrained=True, coco_model=False):
     # Load the pretrained EfficientNetB0 large features.
+    """
+    Create a Faster RCNN model with the EfficientNetB4 backbone.
+
+    Args:
+        num_classes: The number of classes to detect.
+        pretrained: not used.
+        coco_model: not used.
+
+    Returns:
+        A Faster RCNN model with the EfficientNetB4 backbone.
+    """
     backbone = torchvision.models.efficientnet_b4(weights='DEFAULT').features
 
     # We need the output channels of the last convolutional layers from
@@ -43,8 +54,15 @@ def create_model(num_classes, pretrained=True, coco_model=False):
     return model
 
 
+#
+# Example
+# -------
+#
+# cd detection_pipeline_finetunning
+# python3 -m models.fasterrcnn_efficientnet_b4
+#
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
 

@@ -12,6 +12,20 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def create_model(num_classes, pretrained=True, coco_model=False):
+    """
+    Create a Faster RCNN model with VGG16 backbone.
+
+    Args:
+        num_classes (int): The number of classes in the dataset.
+        pretrained (bool, optional): If True, use the weights from the
+            COCO dataset to initialize the model. Defaults to True.
+        coco_model (bool, optional): If True, use the class labels from the
+            COCO dataset. Defaults to False.
+
+    Returns:
+        FasterRCNN: The Faster RCNN model with VGG16 backbone.
+    """
+
     # Load the pretrained VGG16 backbone.
     model_backbone = torchvision.models.vgg16_bn(weights='DEFAULT')
 
@@ -50,6 +64,6 @@ def create_model(num_classes, pretrained=True, coco_model=False):
 
 
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
