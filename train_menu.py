@@ -89,12 +89,6 @@ def parse_opt(default_config=None):
               all at once'
     )
     parser.add_argument(
-        '-ca', '--cosine-annealing',
-        dest='cosine_annealing',
-        action='store_true',
-        help='use cosine annealing warm restarts'
-    )
-    parser.add_argument(
         '-w', '--weights',
         default=None,
         type=str,
@@ -182,6 +176,13 @@ def parse_opt(default_config=None):
         type=float,
     )    
     
+    parser.add_argument(
+        '-ca', '--cosine-annealing',
+        dest='cosine_annealing',
+        action='store_true',
+        help='use cosine annealing warm restarts'
+    )
+
     parser.add_argument(
         '--seed',
         default=0,
