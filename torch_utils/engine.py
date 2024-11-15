@@ -57,6 +57,15 @@ def train_one_epoch(
 
     lr_scheduler = None
     if epoch == 0:
+        # only in the first epoch (all the rest the learning rate is unchanged)
+        # the learning rate is changed by LinearLR()
+        # 
+        # Assuming optimizer uses lr = 0.05, start_factor = 1/3, end_factor = 1 (default), and total_iters = 5 (default)
+        # lr = 0.025    if loop == 0
+        # lr = 0.03125  if loop == 1
+        # lr = 0.0375   if loop == 2
+        # lr = 0.04375  if loop == 3
+        # lr = 0.05    if loop >= 4  
         warmup_factor = 1.0 / 1000
         warmup_iters = min(1000, len(data_loader) - 1)
 

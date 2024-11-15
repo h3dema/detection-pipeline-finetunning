@@ -235,6 +235,11 @@ def train_main(args, dataset_handler):
         print('Loading optimizer state dictionary...')
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
+    # ------------------------------
+    #
+    #         LR Scheduler
+    #
+    # ------------------------------
     if args['cosine_annealing']:
         # LR will be zero as we approach `steps` number of epochs each time.
         # If `steps = 5`, LR will slowly reduce to zero every 5 epochs.
@@ -245,6 +250,17 @@ def train_main(args, dataset_handler):
             T_mult=1,
             verbose=False
         )
+
+    elif args.get('step_lr', False):
+        # note that `cosine_anneling` has priority
+
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=args.get('step_lr', NUM_EPOCHS // 4),
+            gamma=0.1 if args.get('step_gamma') is None else args.get('step_gamma'),
+            verbose=False,
+        )
+    
     else:
         scheduler = None
 

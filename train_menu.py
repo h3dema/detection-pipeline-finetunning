@@ -175,6 +175,27 @@ def parse_opt(default_config=None):
         help='optimizer weight decay (L2 penalty)',
         type=float,
     )    
+
+    parser.add_argument(
+        '--step-lr',
+        dest='step_lr',
+        action='store_true',
+        help='Decays the learning rate of each parameter group by gamma every step_size epochs'
+    )
+    parser.add_argument(
+        '--step-gamma',
+        dest='step_gamma',
+        type=float,
+        default=0.1,
+        help='Multiplicative factor of learning rate decay'
+    )
+    parser.add_argument(
+        '--step-size',
+        dest='step_size',
+        type=int,
+        default=None,
+        help='Period of learning rate decay.'
+    )
     
     parser.add_argument(
         '-ca', '--cosine-annealing',
