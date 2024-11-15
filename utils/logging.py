@@ -8,14 +8,37 @@ import json
 
 from torch.utils.tensorboard.writer import SummaryWriter
 
-# Initialize Weights and Biases.
-def wandb_init(name):
-    wandb.init(name=name)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
+# Initialize Weights and Biases.
+def wandb_init(name):
+    """
+    Initializes Weights and Biases for logging.
+
+    Args:
+        name (str): The name of the Weights and Biases run.
+
+    Returns:
+        None
+    """
+
+    wandb.init(name=name)
+
 def set_log(log_dir):
+    """
+    Configures the logging settings for the application.
+
+    This function sets up a basic configuration for logging, directing log
+    messages to a file located at the specified log directory. It also adds
+    a console handler to the logger, allowing log messages to be output to
+    the console as well.
+
+    :param log_dir: The directory path where the log file 'train.log'
+                    will be created.
+    """
     logging.basicConfig(
         # level=logging.DEBUG,
         format='%(message)s',
@@ -28,12 +51,55 @@ def set_log(log_dir):
     # add the handler to the root logger
     logging.getLogger().addHandler(console)
 
+
 def log(content, *args):
+    """
+    Logs the given content, and any additional arguments provided, to the
+    logger at the INFO level.
+
+    The content and any additional arguments are concatenated together using
+    the str() function, and the resulting string is passed to the logger's
+    info() method.
+
+    :param content: The main content to log.
+    :type content: str
+    :param args: Additional arguments to log.
+    :type args: tuple
+    """
     for arg in args:
         content += str(arg)
     logger.info(content)
 
 def coco_log(log_dir, stats):
+    """
+    Logs the given COCO evaluation stats to the given log directory.
+
+    The provided stats are expected to be an array of numbers, where each
+    number corresponds to the value of the COCO evaluation metric at the
+    same index.
+
+    The following COCO evaluation metrics are supported:
+
+        Average Precision (AP) @ IoU=0.50:0.95 | area=   all | maxDets=100
+        Average Precision (AP) @ IoU=0.50      | area=   all | maxDets=100
+        Average Precision (AP) @ IoU=0.75      | area=   all | maxDets=100
+        Average Precision (AP) @ IoU=0.50:0.95 | area= small | maxDets=100
+        Average Precision (AP) @ IoU=0.50:0.95 | area=medium | maxDets=100
+        Average Precision (AP) @ IoU=0.50:0.95 | area= large | maxDets=100
+        Average Recall (AR) @ IoU=0.50:0.95 | area=   all | maxDets=  1
+        Average Recall (AR) @ IoU=0.50:0.95 | area=   all | maxDets= 10
+        Average Recall (AR) @ IoU=0.50:0.95 | area=   all | maxDets=100
+        Average Recall (AR) @ IoU=0.50:0.95 | area= small | maxDets=100
+        Average Recall (AR) @ IoU=0.50:0.95 | area=medium | maxDets=100
+        Average Recall (AR) @ IoU=0.50:0.95 | area= large | maxDets=100
+
+    :param log_dir: The directory path where the log file 'train.log'
+                    will be created.
+    :type log_dir: str
+    :param stats: The array of numbers representing the COCO evaluation
+                  metrics to be logged.
+    :type stats: list
+    """
     log_dict_keys = [
         'Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]',
         'Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ]',
@@ -62,6 +128,15 @@ def coco_log(log_dir, stats):
 
 
 def set_summary_writer(log_dir):
+    """
+    Set up a tensorboard SummaryWriter instance with the given log_dir.
+
+    :param log_dir: The directory path where the tensorboard log files
+                    will be created.
+    :type log_dir: str
+    :return: The SummaryWriter instance.
+    :rtype: tensorboardX.SummaryWriter
+    """
     writer = SummaryWriter(log_dir=log_dir)
     return writer
 
@@ -75,10 +150,25 @@ def tensorboard_loss_log(name, loss_np_arr, writer, epoch):
 
 
 def tensorboard_map_log(name, val_map_05, val_map, writer, epoch):
+    """
+    To plot graphs for TensorBoard log. The save directory for this
+    is the same as the training result save directory.
+
+    :param name: The name of the graph to be plotted.
+    :type name: str
+    :param val_map_05: The list of validation mAP@0.5 values.
+    :type val_map_05: list
+    :param val_map: The list of validation mAP@0.5:0.95 values.
+    :type val_map: list
+    :param writer: The SummaryWriter instance.
+    :type writer: tensorboardX.SummaryWriter
+    :param epoch: The current training epoch.
+    :type epoch: int
+    """
     writer.add_scalars(
         name,
         {
-            'mAP@0.5': val_map_05[-1], 
+            'mAP@0.5': val_map_05[-1],
             'mAP@0.5_0.95': val_map[-1]
         },
         epoch
@@ -86,9 +176,16 @@ def tensorboard_map_log(name, val_map_05, val_map, writer, epoch):
 
 
 def create_log_csv(log_dir):
+    """
+    Creates a CSV file in the specified log directory with the columns
+    needed for saving the training and validation results.
+
+    :param log_dir: The directory where the CSV file is to be saved.
+    :type log_dir: str
+    """
     cols = [
-        'epoch', 
-        'map', 
+        'epoch',
+        'map',
         'map_05',
         'train loss',
         'train cls loss',
@@ -100,8 +197,8 @@ def create_log_csv(log_dir):
     results_csv.to_csv(os.path.join(log_dir, 'results.csv'), index=False)
 
 def csv_log(
-    log_dir, 
-    stats, 
+    log_dir,
+    stats,
     epoch,
     train_loss_list,
     loss_cls_list,
@@ -109,9 +206,29 @@ def csv_log(
     loss_objectness_list,
     loss_rpn_list
 ):
+    """
+    Logs the current epoch's stats to a CSV file.
+
+    :param log_dir: The directory where the CSV file is to be saved.
+    :type log_dir: str
+    :param stats: List containing the validation mAP@0.5 and mAP@0.5:0.95.
+    :type stats: List[float]
+    :param epoch: The current epoch number.
+    :type epoch: int
+    :param train_loss_list: List containing the loss values for the current epoch's batches.
+    :type train_loss_list: List[float]
+    :param loss_cls_list: List containing the cls loss values for the current epoch's batches.
+    :type loss_cls_list: List[float]
+    :param loss_box_reg_list: List containing the box reg loss values for the current epoch's batches.
+    :type loss_box_reg_list: List[float]
+    :param loss_objectness_list: List containing the objectness loss values for the current epoch's batches.
+    :type loss_objectness_list: List[float]
+    :param loss_rpn_list: List containing the rpn loss values for the current epoch's batches.
+    :type loss_rpn_list: List[float]
+    """
     if epoch+1 == 1:
-        create_log_csv(log_dir) 
-    
+        create_log_csv(log_dir)
+
     df = pd.DataFrame(
         {
             'epoch': int(epoch+1),
@@ -125,14 +242,29 @@ def csv_log(
         }
     )
     df.to_csv(
-        os.path.join(log_dir, 'results.csv'), 
-        mode='a', 
-        index=False, 
+        os.path.join(log_dir, 'results.csv'),
+        mode='a',
+        index=False,
         header=False
     )
 
 
 def overlay_on_canvas(bg, image):
+    """
+    Overlay an image on a canvas (background) at the center of the canvas.
+
+    Parameters
+    ----------
+    bg : numpy.ndarray
+        The background (canvas) image.
+    image : numpy.ndarray
+        The image to overlay on the canvas.
+
+    Returns
+    -------
+    numpy.ndarray
+        The overlayed image.
+    """
     bg_copy = bg.copy()
     h, w = bg.shape[:2]
     h1, w1 = image.shape[:2]
@@ -143,25 +275,53 @@ def overlay_on_canvas(bg, image):
 
 
 def wandb_log(
-    epoch_loss, 
+    epoch_loss,
     loss_list_batch,
     loss_cls_list,
     loss_box_reg_list,
     loss_objectness_list,
     loss_rpn_list,
     loss_bbox_ctrness,
-    val_map_05, 
+    val_map_05,
     val_map,
     val_pred_image,
     image_size
 ):
     """
-    :param epoch_loss: Single loss value for the current epoch.
-    :param batch_loss_list: List containing loss values for the current 
-        epoch's loss value for each batch.
-    :param val_map_05: Current epochs validation mAP@0.5 IoU.
-    :param val_map: Current epochs validation mAP@0.5:0.95 IoU. 
+    Logs the following to Weights and Biases:
+
+    - Per-iteration training loss.
+    - Per-epoch training loss.
+    - Validation mAP_0.5:0.95.
+    - Validation mAP_0.5.
+    - Validation predictions.
+
+    Parameters
+    ----------
+    epoch_loss : float
+        Single loss value for the current epoch.
+    loss_list_batch : list of float
+        List containing loss values for the current epoch's loss value for each batch.
+    loss_cls_list : list of float
+        A list of classification losses for each iteration in the current epoch.
+    loss_box_reg_list : list of float
+        A list of bounding box regression losses for each iteration in the current epoch.
+    loss_objectness_list : list of float
+        A list of objectness losses for each iteration in the current epoch.
+    loss_rpn_list : list of float
+        A list of RPN losses for each iteration in the current epoch.
+    loss_bbox_ctrness : list of float
+        A list of bbox center-ness losses for each iteration in the current epoch.
+    val_map_05 : float
+        The validation mAP_0.5.
+    val_map : float
+        The validation mAP_0.5:0.95.
+    val_pred_image : list of numpy.ndarray
+        A list of prediction images for validation.
+    image_size : int
+        The size of the images.
     """
+
     # WandB logging.
     for i in range(len(loss_list_batch)):
         wandb.log(
@@ -198,7 +358,7 @@ def wandb_log(
     if len(val_pred_image) == 2:
         log_image = cv2.hconcat(
             [
-                overlay_on_canvas(bg, val_pred_image[0]), 
+                overlay_on_canvas(bg, val_pred_image[0]),
                 overlay_on_canvas(bg, val_pred_image[1])
             ]
         )
@@ -208,18 +368,18 @@ def wandb_log(
         log_image = overlay_on_canvas(bg, val_pred_image[0])
         for i in range(len(val_pred_image)-1):
             log_image = cv2.hconcat([
-                log_image, 
+                log_image,
                 overlay_on_canvas(bg, val_pred_image[i+1])
             ])
         wandb.log({'predictions': [wandb.Image(log_image)]})
-    
+
     if len(val_pred_image) > 8:
         log_image = overlay_on_canvas(bg, val_pred_image[0])
         for i in range(len(val_pred_image)-1):
             if i == 7:
                 break
             log_image = cv2.hconcat([
-                log_image, 
+                log_image,
                 overlay_on_canvas(bg, val_pred_image[i-1])
             ])
         wandb.log({'predictions': [wandb.Image(log_image)]})
@@ -235,6 +395,13 @@ def wandb_save_model(model_dir):
 
 
 class LogJSON():
+    """
+    The LogJSON class is designed to manage a JSON file that stores image and annotation data in the COCO format.
+
+    Note that the update method assumes that the input data is in a specific format,
+    with boxes and labels being arrays of bounding box coordinates and class labels, respectively.
+    The classes parameter is a dictionary mapping class IDs to class names.
+    """
     def __init__(self, output_filename):
         """
         :param output_filename: Path where the JSOn file should be saved.
@@ -268,9 +435,9 @@ class LogJSON():
 
         # Add image entry
         self.images.append({
-            "id": self.image_id, 
-            "file_name": image_info['file_name'], 
-            "width": image_info['width'], 
+            "id": self.image_id,
+            "file_name": image_info['file_name'],
+            "width": image_info['width'],
             "height": image_info['height']
         })
 

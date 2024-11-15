@@ -25,12 +25,28 @@ class TwoMLPHead(nn.Module):
     """
 
     def __init__(self, in_channels, representation_size):
+        """
+        Initializes the TwoMLPHead.
+
+        Args:
+            in_channels (int): The number of input channels.
+            representation_size (int): The size of the intermediate representation.
+        """
         super().__init__()
 
         self.fc6 = nn.Linear(in_channels, representation_size)
         self.fc7 = nn.Linear(representation_size, representation_size)
 
     def forward(self, x):
+        """
+        Forward pass through the two fully connected layers.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor after passing through the two fully connected layers.
+        """
         x = x.flatten(start_dim=1)
 
         x = F.relu(self.fc6(x))
@@ -50,11 +66,29 @@ class FastRCNNPredictor(nn.Module):
     """
 
     def __init__(self, in_channels, num_classes):
+        """
+        Initializes the FastRCNNPredictor with the number of input channels and the number of output classes.
+
+        Args:
+            in_channels (int): The number of input channels.
+            num_classes (int): The number of output classes (including background).
+        """
         super().__init__()
         self.cls_score = nn.Linear(in_channels, num_classes)
         self.bbox_pred = nn.Linear(in_channels, num_classes * 4)
 
     def forward(self, x):
+        """
+        Computes the class and bounding box predictions for the input x.
+
+        Args:
+            x (Tensor): The input tensor, should be of shape (N, in_channels, 1, 1) where N is the batch size.
+
+        Returns:
+            Tuple[Tensor, Tensor]:
+                - scores (Tensor): The class prediction tensor, should be of shape (N, num_classes)
+                - bbox_deltas (Tensor): The bounding box prediction tensor, should be of shape (N, num_classes * 4)
+        """
         if x.dim() == 4:
             torch._assert(
                 list(x.shape[2:]) == [1, 1],
@@ -68,6 +102,18 @@ class FastRCNNPredictor(nn.Module):
 
 
 def create_model(num_classes=81, pretrained=True, coco_model=False):
+    """
+    Create a Faster RCNN model with a SqueezeNet1_1 backbone.
+
+    Args:
+        num_classes (int): Number of classes to predict.
+        pretrained (bool): Whether to use a pre-trained model.
+        coco_model (bool): Whether to use a pre-trained model on COCO dataset.
+
+    Returns:
+        model (FasterRCNN): The created model.
+    """
+
     # Load the pretrained SqueezeNet1_1 backbone.
     backbone = torchvision.models.squeezenet1_1(pretrained=pretrained).features
 
@@ -117,7 +163,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
 
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
 

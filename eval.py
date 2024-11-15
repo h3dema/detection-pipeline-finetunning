@@ -4,6 +4,7 @@ Run evaluation on a trained model to get mAP and class wise AP.
 USAGE:
 python eval.py --data configs/voc.yaml --weights outputs/training/fasterrcnn_convnext_small_voc_15e_noaug/best_model.pth --model fasterrcnn_convnext_small
 """
+from typing import Any
 from datasets import (
     create_valid_dataset, create_valid_loader
 )
@@ -22,7 +23,24 @@ import numpy as np
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-if __name__ == '__main__':
+
+def menu():
+    """
+    Parses command-line arguments for evaluating a trained model.
+
+    Returns:
+        dict: A dictionary of parsed command-line arguments including:
+            - data (str): Path to the data configuration file.
+            - model (str): Name of the model to use for evaluation.
+            - weights (str): Path to the trained checkpoint weights.
+            - imgsz (int): Image size to feed to the network.
+            - workers (int): Number of workers for data processing/transforms/augmentations.
+            - batch (int): Batch size to load the data.
+            - device (torch.device): Computation/training device to use.
+            - verbose (bool): Flag to show class-wise mAP.
+            - square_training (bool): Flag to resize images to square shape for training.
+    """
+
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -76,6 +94,11 @@ if __name__ == '__main__':
               square canvas.'
     )
     args = vars(parser.parse_args())
+    return args
+
+
+if __name__ == '__main__':
+    args: dict[str, Any] = menu()
 
     # Load the data configurations
     with open(args['data']) as file:
@@ -139,6 +162,20 @@ if __name__ == '__main__':
         classes=None,
         colors=None
     ):
+        """
+        Evaluate the model on the validation set.
+
+        Args:
+            model: Model object.
+            data_loader: Dataloader for the validation set.
+            device: Device to use for the computation.
+            out_dir: Directory to save the images with the predictions.
+            classes: List of class names.
+            colors: List of colors, one for each class.
+
+        Returns:
+            metric_summary: Dictionary with the evaluation metrics.
+        """
         metric = MeanAveragePrecision(class_metrics=args['verbose'])
         n_threads = torch.get_num_threads()
         # FIXME remove this and make paste_masks_in_image run on the GPU

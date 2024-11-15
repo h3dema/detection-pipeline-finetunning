@@ -1,4 +1,7 @@
 """
+Train models using custom dataset (based on COCO dataset).
+
+
 USAGE
 
 # training with Faster RCNN ResNet50 FPN model without mosaic or any other augmentation:
@@ -46,8 +49,8 @@ import numpy as np
 import torchinfo
 import os
 
-from menu import parse_opt
-from train_main import main
+from train_menu import parse_opt
+from train_main import train_main
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -60,4 +63,4 @@ np.random.seed(42)
 if __name__ == '__main__':
     args = parse_opt()
     dataset_handler = DatasetHandler(args)
-    main(args, dataset_handler)
+    train_main(args, dataset_handler)

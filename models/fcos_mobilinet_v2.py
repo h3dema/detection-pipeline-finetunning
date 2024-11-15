@@ -14,6 +14,22 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def create_model(num_classes, pretrained=True, coco_model=False):
+    """
+    Create a FCOS model with a MobileNet_V2 backbone.
+
+    Args:
+        num_classes (int): The number of classes in the dataset.
+        pretrained (bool, optional): If True, use the weights from the torchvision
+            `MobileNet_V2_Weights` for the backbone. If False, will use random weights.
+            Defaults to True.
+        coco_model (bool, optional): If True, use the COCO model weights from the
+            torchvision `FCOS_Weights` for the complete model. If False, will use
+            random weights. Defaults to False.
+
+    Returns:
+        model (FCOS): The FCOS model with a MobileNet_V2 backbone.
+    """
+
     # Load the pretrained MobileNet_V2 backbone.
     backbone = torchvision.models.mobilenet_v2(weights=torchvision.models.MobileNet_V2_Weights.DEFAULT).features
 
@@ -39,6 +55,6 @@ def create_model(num_classes, pretrained=True, coco_model=False):
 
 
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)

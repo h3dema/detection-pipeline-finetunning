@@ -12,6 +12,19 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def create_model(num_classes, pretrained=True, coco_model=False):
+    """
+    Creates a Faster RCNN model with a ResNet18 backbone.
+
+    Args:
+        num_classes (int): The number of classes for the model's output layer.
+        pretrained (bool): If True, loads pretrained weights for the backbone.
+        coco_model (bool): Not used in this implementation.
+
+    Returns:
+        FasterRCNN: A Faster RCNN model with a ResNet18 backbone, configured
+        with specified RPN anchor generator and RoI pooler.
+    """
+
     # Load the pretrained ResNet18 backbone.
     model_backbone = torchvision.models.resnet18(weights='DEFAULT')
 

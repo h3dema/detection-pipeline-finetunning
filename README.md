@@ -184,13 +184,13 @@ Next, to start the training, you can use the following command.
 **Command format:**
 
 ```bash
-python train.py --data <path to the data config YAML file> --epochs 100 --model <model name (defaults to fasterrcnn_resnet50)> --name <folder name inside output/training/> --batch 16
+python train.py --config <path to the data config YAML file> --epochs 100 --model <model name (defaults to fasterrcnn_resnet50)> --name <folder name inside output/training/> --batch 16
 ```
 
 **In this case, the exact command would be:**
 
 ```bash
-python train.py --data configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
+python train.py --config configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
 ```
 
 **The terimal output should be similar to the following:**
@@ -261,7 +261,7 @@ SAVING PLOTS COMPLETE...
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1
-python -m torch.distributed.launch --nproc_per_node=2 --use_env train.py --data configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
+python -m torch.distributed.launch --nproc_per_node=2 --use_env train.py --config configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
 ```
 
 ## Inference
@@ -324,13 +324,13 @@ python inference_video.py --track --weights outputs/training/fish_det/best_model
 Replace the required arguments according to your need.
 
 ```bash
-python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data configs/aquarium.yaml --batch 4
+python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --config configs/aquarium.yaml --batch 4
 ```
 
 You can use the following command to show a table for **class-wise Average Precision** (`--verbose` additionally needed).
 
 ```bash
-python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --data configs/aquarium.yaml --batch 4 --verbose
+python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --config configs/aquarium.yaml --batch 4 --verbose
 ```
 
 ## A List of All Model Flags to Use With the Training Script
@@ -339,14 +339,7 @@ The following command expects the `coco` dataset to be present one directory bac
 
 ```bash
 # Usage 
-python train.py --model fasterrcnn_resnet50_fpn_v2 --data configs/coco.yaml
+python train.py --model fasterrcnn_resnet50_fpn_v2 --config configs/coco.yaml
 ```
 
-**OR SEE THE LIST OF OPTIONS IN **: [__INIT__](models/__init__.py)
-
-
-## Tutorials
-
-* [Wheat Detection using Faster RCNN and PyTorch](https://debuggercafe.com/wheat-detection-using-faster-rcnn-and-pytorch/)
-* [Plant Disease Detection using the PlantDoc Dataset and PyTorch Faster RCNN](https://debuggercafe.com/plant-disease-detection-using-plantdoc/)
-* [Small Scale Traffic Light Detection using PyTorch](https://debuggercafe.com/small-scale-traffic-light-detection/)
+**OR see the list of options in**: [__INIT__](models/__init__.py)

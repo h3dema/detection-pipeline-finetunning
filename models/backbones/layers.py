@@ -17,7 +17,24 @@ from torch import dist
 
 
 class Mlp(nn.Module):
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+    """
+    This class definition implements a simple multi-layer perceptron (MLP) neural network module in PyTorch.
+    """
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.GELU, drop=0.):
+        """
+        Initialize Mlp module.
+
+        Parameters:
+        in_features (int): Input dim
+        hidden_features (int): Hidden dim
+        out_features (int): Output dim
+        act_layer (nn.Module): Activation layer
+        drop (float): Dropout rate
+        """
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -27,6 +44,15 @@ class Mlp(nn.Module):
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
+        """
+        Forward pass of the MLP module.
+
+        Parameters:
+        x (torch.Tensor): Input tensor
+
+        Returns:
+        torch.Tensor: Output tensor
+        """
         x = self.fc1(x)
         x = self.act(x)
         x = self.drop(x)
@@ -77,9 +103,21 @@ class DropPath(nn.Module):
         self.scale_by_keep = scale_by_keep
 
     def forward(self, x):
+        """
+        Forward pass to apply stochastic depth (Drop Path) to the input tensor.
+
+        Parameters:
+        x (torch.Tensor): Input tensor to which the Drop Path will be applied.
+
+        Returns:
+        torch.Tensor: Output tensor with stochastic depth applied.
+        """
         return drop_path(x, self.drop_prob, self.training, self.scale_by_keep)
 
     def extra_repr(self):
+        """Returns a string with extra information about this module, to be displayed in the string representation of this module.
+        """
+
         return f'drop_prob={round(self.drop_prob,3):0.3f}'
 
 

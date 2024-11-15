@@ -31,7 +31,6 @@ import numpy as np
 import torchinfo
 import os
 
-from menu import parse_opt
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -41,7 +40,24 @@ RANK = int(os.getenv('RANK', -1))
 np.random.seed(42)
 
 
-def main(args, dataset_handler):
+def train_main(args, dataset_handler):
+    """
+    Main training loop function.
+    This function takes command line arguments and dataset handler object as arguments.
+    It initializes the W&B project with the project name,
+    initializes distributed mode, sets up the model, optimizer, and
+    training and validation dataloaders.
+    Then, it starts the training loop and evaluates model on validation set every epoch.
+    It also logs losses, mAP, and other metrics to TensorBoard and W&B.
+    It saves the model state after every epoch and also saves the best model
+    according to the highest mAP @0.5:0.95 IoU.
+    Early stopping is also used to stop the training if the model's mAP
+    doesn't improve for a certain number of epochs.
+
+    Args:
+        args (_type_): _description_
+        dataset_handler (_type_): _description_
+    """
     # Initialize distributed mode.
     utils.init_distributed_mode(args)
 
@@ -72,7 +88,7 @@ def main(args, dataset_handler):
     # write configuration to the output
     log("Config:", args)
     log("OUT_DIR:", OUT_DIR)
-    
+
     # Model configurations
     IMAGE_SIZE = args['imgsz']
 
@@ -392,9 +408,9 @@ def main(args, dataset_handler):
         )
         # Save the model dictionary only for the current epoch.
         save_model_state(
-            model, 
-            OUT_DIR, 
-            dataset_handler.data_configs, 
+            model,
+            OUT_DIR,
+            dataset_handler.data_configs,
             args['model']
         )
         # Save best model if the current mAP @0.5:0.95 IoU is

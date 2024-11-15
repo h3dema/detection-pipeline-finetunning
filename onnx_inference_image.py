@@ -45,10 +45,26 @@ def collect_all_images(dir_test):
 
 
 def to_numpy(tensor):
+    """
+    Converts a PyTorch tensor to a NumPy array.
+
+    Args:
+        tensor (torch.Tensor): The input tensor to be converted.
+
+    Returns:
+        numpy.ndarray: The converted NumPy array.
+    """
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
 
 def parse_opt():
+    """
+    Function to parse command line arguments.
+
+    Returns:
+        dict: parsed command line arguments.
+    """
+    
     # Construct the argument parser.
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -116,6 +132,18 @@ def parse_opt():
 
 
 def main(args):
+    """
+    Main function for performing onnx inference on images.
+
+    Parameters
+    ----------
+    args : dict
+        All the command line arguments passed to the script.
+
+    Returns
+    -------
+    None
+    """
     np.random.seed(42)
     # Load model.
     ort_session = onnxruntime.InferenceSession(

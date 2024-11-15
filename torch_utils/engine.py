@@ -22,6 +22,26 @@ def train_one_epoch(
     scaler=None,
     scheduler=None
 ):
+    """
+    Train a model for one epoch and return the metric logger and lists of losses
+    collected during training.
+
+    Args:
+        model: The model to train.
+        optimizer: The optimizer to use.
+        data_loader: The data loader to use.
+        device: The device (cpu or cuda) to use.
+        epoch: The current epoch.
+        train_loss_hist: A histogram to store the training losses.
+        print_freq: The frequency of printing the training losses.
+        scaler: The scaler to use for automatic mixed precision training.
+        scheduler: The scheduler to use for the learning rate.
+
+    Returns:
+        A tuple containing the metric logger and lists of losses collected during
+        training.
+    """
+
     model.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter("lr", utils.SmoothedValue(window_size=1, fmt="{value:.6f}"))
@@ -94,14 +114,14 @@ def train_one_epoch(
             batch_loss_box_reg_list.append(loss_dict_reduced['bbox_regression'].detach().cpu())
 
         if 'loss_objectness' in loss_dict_reduced:
-            batch_loss_objectness_list.append(loss_dict_reduced['loss_objectness'].detach().cpu())    
+            batch_loss_objectness_list.append(loss_dict_reduced['loss_objectness'].detach().cpu())
 
         if 'loss_rpn_box_reg' in loss_dict_reduced:
             batch_loss_rpn_list.append(loss_dict_reduced['loss_rpn_box_reg'].detach().cpu())
 
         if 'bbox_ctrness' in  loss_dict_reduced:
             batch_loss_bbox_ctrness.append(loss_dict_reduced['bbox_ctrness'].detach().cpu())
-        
+
         train_loss_hist.send(loss_value)
 
         if scheduler is not None:
@@ -118,7 +138,22 @@ def train_one_epoch(
     )
 
 
-def _get_iou_types(model):
+def _get_iou_types(model) -> list[str]:
+    """
+    Checks if the model is an instance of torchvision.models.detection.MaskRCNN
+    or torchvision.models.detection.KeypointRCNN, and returns the appropriate
+    output iou types.
+
+    Args:
+        model (nn.Module): A torch.nn.Module instance
+
+    Returns:
+        list: A list of strings of iou types. If the model is an instance of
+            torchvision.models.detection.MaskRCNN, returns ["bbox", "segm"].
+            If the model is an instance of torchvision.models.detection.KeypointRCNN,
+            returns ["bbox", "segm", "keypoints"]. Otherwise, returns ["bbox"].
+    """
+
     model_without_ddp = model
     if isinstance(model, torch.nn.parallel.DistributedDataParallel):
         model_without_ddp = model.module
@@ -140,6 +175,21 @@ def evaluate(
     classes=None,
     colors=None
 ):
+    """
+    Evaluate a model on the given dataset.
+
+    Args:
+        model (nn.Module): the model to evaluate
+        data_loader (DataLoader): the data loader containing the evaluation dataset
+        device (torch.device): the device to use for evaluation
+        save_valid_preds (bool, optional): if True, save the validation prediction images to disk. Defaults to False.
+        out_dir (str, optional): the directory to save the validation prediction images to. Defaults to None.
+        classes (list, optional): the list of class names. Defaults to None.
+        colors (list, optional): the list of colors to use for the class labels. Defaults to None.
+
+    Returns:
+        tuple: a tuple containing the evaluation stats and the validation prediction image.
+    """
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)

@@ -1,14 +1,16 @@
-import torchvision
-
 from torch import nn
-from torchvision.models.detection import FasterRCNN  # type: ignore
-from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
+from torch.nn import functional as F
 
 
 class DarkNet(nn.Module):
     # A DarkNet model with reduced output channels for each layer.
 
     def __init__(self, initialize_weights=True, num_classes=1000):
+        """
+        Args:
+            initialize_weights (bool): Whether to initialize the weights of the model.
+            num_classes (int): The number of classes in the classification task.
+        """
         super(DarkNet, self).__init__()
 
         self.num_classes = num_classes
@@ -22,6 +24,14 @@ class DarkNet(nn.Module):
             self._initialize_weights()
 
     def _create_conv_layers(self):
+        """
+        Creates the convolutional layers of the DarkNet backbone.
+
+        The convolutional layers are based on the YOLOv3 paper.
+
+        Returns:
+            nn.Sequential: The convolutional layers of the DarkNet backbone.
+        """
         conv_layers = nn.Sequential(
             nn.Conv2d(3, 4, 7, stride=2, padding=3),
             nn.LeakyReLU(0.1, inplace=True),
@@ -74,18 +84,53 @@ class DarkNet(nn.Module):
         return conv_layers
 
     def _pool(self):
+        """
+        Creates a pooling layer for the DarkNet backbone.
+
+        This method utilizes average pooling to downsample the feature map.
+
+        Returns:
+            nn.Sequential: The pooling layer of the DarkNet backbone.
+        """
         pool = nn.Sequential(
             nn.AvgPool2d(7),
         )
         return pool
 
     def _create_fc_layers(self):
+        """
+        Creates the fully connected layers of the DarkNet backbone.
+
+        The fully connected layers consist of a single linear layer
+        with the number of inputs equal to the number of outputs from
+        the convolutional layers and the number of outputs equal to
+        the number of classes.
+
+        Returns:
+            nn.Sequential: The fully connected layers of the DarkNet backbone.
+        """
         fc_layers = nn.Sequential(
             nn.Linear(128, self.num_classes)
         )
         return fc_layers
 
     def _initialize_weights(self):
+        """
+        Initialize the weights of the model.
+
+        This method is called by the model constructor and can be overridden
+        by subclasses to customize the initialization of the weights.
+
+        The default implementation initializes the weights of the model
+        using the Kaiming initialization method for convolutional layers
+        and the Xavier initialization method for linear layers.
+
+        See the documentation for PyTorch's nn.init module for more details
+        about the initialization methods used by this method.
+
+        :return: None
+        """
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal(m.weight, mode='fan_in',
@@ -98,51 +143,17 @@ class DarkNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
+        """
+        Forward pass of the DarkNet backbone.
+
+        Args:
+            x (torch.Tensor): The input tensor to the DarkNet backbone.
+
+        Returns:
+            torch.Tensor: The output tensor of the DarkNet backbone.
+        """
         x = self.features(x)
         x = self.pool(x)
         x = x.squeeze()
         x = self.fcs(x)
         return x
-
-
-def create_model(num_classes, pretrained=True, coco_model=False):
-    # Load the Mini DarkNet model features.
-    backbone = DarkNet(num_classes=10).features
-
-    # We need the output channels of the last convolutional layers from
-    # the features for the Faster RCNN model.
-    # It is 128 for this custom Mini DarkNet model.
-    backbone.out_channels = 128
-
-    # Generate anchors using the RPN. Here, we are using 5x3 anchors.
-    # Meaning, anchors with 5 different sizes and 3 different aspect
-    # ratios.
-    anchor_generator = AnchorGenerator(
-        sizes=((32, 64, 128, 256, 512),),
-        aspect_ratios=((0.5, 1.0, 2.0),)
-    )
-
-    # Feature maps to perform RoI cropping.
-    # If backbone returns a Tensor, `featmap_names` is expected to
-    # be [0]. We can choose which feature maps to use.
-    roi_pooler = torchvision.ops.MultiScaleRoIAlign(
-        featmap_names=['0'],
-        output_size=7,
-        sampling_ratio=2
-    )
-
-    # Final Faster RCNN model.
-    model = FasterRCNN(
-        backbone=backbone,
-        num_classes=num_classes,
-        rpn_anchor_generator=anchor_generator,
-        box_roi_pool=roi_pooler
-    )
-    return model
-
-
-if __name__ == '__main__':
-    from models.model_summary import summary
-    model = create_model(num_classes=81, pretrained=True, coco_model=True)
-    summary(model)
-

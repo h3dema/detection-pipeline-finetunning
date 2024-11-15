@@ -4,6 +4,19 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
 def create_model(num_classes, pretrained=True, coco_model=False):
+    """
+    Load a pre-trained Faster RCNN model with a ResNet50 backbone and FPN.
+
+    Parameters:
+    - num_classes (int): The number of classes that the model should output.
+    - pretrained (bool): Whether to use ImageNet weights or not. Default is True.
+    - coco_model (bool): Whether to return the model with the COCO classes. Default is False.
+
+    Returns:
+    - model: The pre-trained model with the specified number of classes.
+    - coco_model (bool): The model with the COCO classes if coco_model is True.
+    """
+
     # Load Faster RCNN pre-trained model
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
         weights='DEFAULT'
@@ -20,7 +33,7 @@ def create_model(num_classes, pretrained=True, coco_model=False):
 
 
 if __name__ == '__main__':
-    from model_summary import summary
+    from models.model_summary import summary
     model = create_model(num_classes=81, pretrained=True, coco_model=True)
     summary(model)
 
