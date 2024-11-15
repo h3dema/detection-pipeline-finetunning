@@ -187,13 +187,14 @@ Next, to start the training, you can use the following command.
 python train.py --config <path to the data config YAML file> --epochs 100 --model <model name (defaults to fasterrcnn_resnet50)> --name <folder name inside output/training/> --batch 16
 ```
 
-**In this case, the exact command would be:**
+In this case, the exact command would be:
 
 ```bash
 python train.py --config configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
 ```
 
-**The terimal output should be similar to the following:**
+
+The terminal output should be similar to the following:
 
 ```
 Number of training samples: 665
@@ -255,6 +256,22 @@ IoU metric: bbox
 SAVING PLOTS COMPLETE...
 ```
 
+
+
+## A List of All Model Flags to Use With the Training Script
+
+The following command expects the `coco` dataset to be present one directory back inside the `input` folder in XML format. You can find the dataset [here on Kaggle](https://www.kaggle.com/datasets/sovitrath/coco-xml-format). Check the `configs/coco.yaml` for more details. You can change the relative dataset path in the YAML file according to your structure.
+
+```bash
+# Usage 
+python train.py --model fasterrcnn_resnet50_fpn_v2 --config configs/coco.yaml
+```
+
+
+**OR see the list of options in** the [\_\_INIT\_\_](models/__init__.py) file.
+
+
+
 ## Distributed Training
 
 **Training on 2 GPUs**:
@@ -264,7 +281,24 @@ export CUDA_VISIBLE_DEVICES=0,1
 python -m torch.distributed.launch --nproc_per_node=2 --use_env train.py --config configs/smoke.yaml --epochs 100 --model fasterrcnn_resnet50_fpn --name smoke_training --batch 16
 ```
 
-## Inference
+# Inference
+
+The `inference.py` performs inference on a trained object detection model.
+It can be run from the command line using the following command:
+
+```bash
+python inference.py --input <input_image_or_directory> --weights <path_to_model_weights> --data <path_to_data_config> --output <output_directory>
+```
+
+The script expects the following command-line arguments:
++ `--input`: the input image or directory containing images to perform inference on
++ `--weights`: the path to the trained model weights file
++ `--data`: the path to the data configuration file
++ `--output`: the output directory where the inference results will be saved
+
+The script loads the trained model and data configurations using the provided paths.
+It performs inference on the input images and saves the results to the output directory.
+
 
 ### Image Inference on COCO Pretrained Model
 
@@ -333,13 +367,35 @@ You can use the following command to show a table for **class-wise Average Preci
 python eval.py --model fasterrcnn_resnet50_fpn_v2 --weights outputs/training/trial/best_model.pth --config configs/aquarium.yaml --batch 4 --verbose
 ```
 
-## A List of All Model Flags to Use With the Training Script
 
-The following command expects the `coco` dataset to be present one directory back inside the `input` folder in XML format. You can find the dataset [here on Kaggle](https://www.kaggle.com/datasets/sovitrath/coco-xml-format). Check the `configs/coco.yaml` for more details. You can change the relative dataset path in the YAML file according to your structure.
+
+
+
+
+# ONNX
+
+
+The `export.py` script can be used to export a trained model to the ONNX format.
+The program imports uses `torch` library to load the trained model and exporting it to ONNX.
+The script can be run from the command line using the following command:
 
 ```bash
-# Usage 
-python train.py --model fasterrcnn_resnet50_fpn_v2 --config configs/coco.yaml
+python export.py --weights <path_to_model_weights> --data <path_to_data_config> --out <output_file_name>
 ```
 
-**OR see the list of options in**: [__INIT__](models/__init__.py)
+The script expects three command-line arguments:
+   + `--weights`: the path to the trained model weights file (e.g. `outputs/training/fasterrcnn_resnet18_train/best_model.pth`)
+   + `--data`: the path to the data configuration file (e.g. `configs/coco.yaml`)
+   + `--out`: the output file name for the exported ONNX model (e.g. `model.onnx`)
+
+
+## Requirements
+
+The script requires `onnx` and `onnxruntime`.
+
+
+## Inferences
+
+- `onnx_inference_image`
+- `onnx_inference_video`
+
