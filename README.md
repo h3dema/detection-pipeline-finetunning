@@ -2,7 +2,7 @@
 
 
 
-Train PyTorch models easily on any custom dataset. Choose between official PyTorch models trained on COCO dataset, or choose any backbone from Torchvision classification models, or even write your own custom backbones. 
+Train PyTorch models easily on any custom dataset. Choose between official PyTorch models trained on COCO dataset, or choose any backbone from Torchvision classification models, or even write your own custom backbones.
 
 ***You can run a Faster RCNN model with Mini Darknet backbone and Mini Detection Head at more than 150 FPS on an RTX 3080***.
 
@@ -12,41 +12,30 @@ Train PyTorch models easily on any custom dataset. Choose between official PyTor
 
 ​																								[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1oFxPpBeE8SzSQq7BTUv28IIqQeiHHLdj?usp=sharing) [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/code/sovitrath/custom-faster-rcnn-training-kaggle/notebook)
 
-* [Find blog posts/tutorials on DebuggerCafe](#Tutorials)
-
-## Updates
-
-* **August 28 2024:** SAHI image inference for all pretrained Torchvision Faster RCNN models integrated. [Find the script here](https://github.com/sovit-123/fasterrcnn-pytorch-training-pipeline/blob/main/sahi_inference.py).
-
-* Filter classes to visualize during inference using the `--classes` command line argument with space separated class indices from the dataset YAML file. 
-
-  For example, to visualize only persons in COCO dataset, use,  `python inference.py --classes 1 <rest of the command>`
-
-  To visualize person and car, use, `python inference.py --classes 1 3 <rest of the command>`
-
-* Added Deep SORT Real-Time tracking to `inference_video.py` and `onnx_video_inference.py`. Using `--track` command with the usual inference command. Support for **MobileNet** Re-ID for now.
-
-## Custom Model Naming Conventions
-
-***For this repository:***
-
-| Head size | Description |
-|-------|---------|
-| **Small head** | 512 representation size in the Faster RCNN head and predictor |
-| **Tiny head**  | 256 representation size in the Faster RCNN head and predictor  |
-| **Nano head**  | 128 representation size in the Faster RCNN head and predictor  |
-
-## [Check All Available Model Flags](#A-List-of-All-Model-Flags-to-Use-With-the-Training-Script)
-
 ## Go To
 
+* [Model naming conventions](#Custom-Model-Naming-Conventions)
 * [Setup on Ubuntu](#Setup-for-Ubuntu)
 * [Setup on Windows](#Setup-on-Windows)
 * [Train on Custom Dataset](#Train-on-Custom-Dataset)
+* [Check all available arguments for training](#Check-all-available-arguments-for-training)
+* [Distributed training](#Distributed-training)
 * [Inference](#Inference)
 * [Evaluation](#Evaluation)
 * [Available Models](#A-List-of-All-Model-Flags-to-Use-With-the-Training-Script)
-* [Tutorials](#Tutorials)
+
+
+## Custom Model Naming Conventions
+
+For this repository, we consider the following representation size in the **Faster RCNN** head and predictor:
+
+| Head size      | Size |
+|----------------|------|
+| **Small head** |  512 |
+| **Tiny head**  |  256 |
+| **Nano head**  |  128 |
+
+
 
 ## Setup on Ubuntu
 
@@ -79,6 +68,10 @@ Train PyTorch models easily on any custom dataset. Choose between official PyTor
       OR install the version with CUDA support as per your choice from **[here](https://pytorch.org/get-started/locally/)**.
 
       Then install the remaining **[requirements](https://github.com/sovit-123/fasterrcnn-pytorch-training-pipeline/blob/main/requirements.txt)**.
+
+
+
+
 
 ## Setup on Windows
 
@@ -115,6 +108,11 @@ Train PyTorch models easily on any custom dataset. Choose between official PyTor
    OR install the version with CUDA support as per your choice from **[here](https://pytorch.org/get-started/locally/)**.
 
    Then install the remaining **[requirements](https://github.com/sovit-123/pytorch-efficientdet-api/blob/main/requirements.txt)** except for `pycocotools`.
+
+
+
+
+
 
 ## Train on Custom Dataset
 
@@ -263,12 +261,74 @@ SAVING PLOTS COMPLETE...
 The following command expects the `coco` dataset to be present one directory back inside the `input` folder in XML format. You can find the dataset [here on Kaggle](https://www.kaggle.com/datasets/sovitrath/coco-xml-format). Check the `configs/coco.yaml` for more details. You can change the relative dataset path in the YAML file according to your structure.
 
 ```bash
-# Usage 
+# Usage
 python train.py --model fasterrcnn_resnet50_fpn_v2 --config configs/coco.yaml
 ```
 
 
-**OR see the list of options in** the [\_\_INIT\_\_](models/__init__.py) file.
+OR **see the list of all the available models in the [\_\_INIT\_\_.py](models/__init__.py) file.**
+
+
+
+## Check all available arguments for training
+
+```
+usage: train.py [-h]
+                [-m {fasterrcnn_resnet50_fpn,fasterrcnn_mobilenetv3_large_fpn,fasterrcnn_mobilenetv3_large_320_fpn,fasterrcnn_convnext_tiny,fasterrcnn_convnext_small,fasterrcnn_custom_resnet,fasterrcnn_darknet,fasterrcnn_efficientnet_b0,fasterrcnn_mbv3_small_nano_head,fasterrcnn_mini_darknet,fasterrcnn_mini_darknet_nano_head,fasterrcnn_squeezenet1_0,fasterrcnn_squeezenet1_1,fasterrcnn_mini_squeezenet1_1_small_head,fasterrcnn_mini_squeezenet1_1_tiny_head,fasterrcnn_mobilevit_xxs,fasterrcnn_nano,fasterrcnn_squeezenet1_1_small_head,fasterrcnn_resnet18,fasterrcnn_resnet50_fpn_v2,fasterrcnn_resnet101,fasterrcnn_resnet152,fasterrcnn_vitdet,fasterrcnn_vitdet_tiny,fasterrcnn_regnet_y_400mf,fasterrcnn_vgg16,fcos_mobilinet_v2,retinanet_resnet50,retinanet_mobilenet_v2,ssd_vgg16}]
+                [--config CONFIG] [-d DEVICE] [-e EPOCHS] [-j WORKERS] [-b BATCH] [--lr LR] [-ims IMGSZ] [-n NAME] [-vt] [--mosaic MOSAIC] [-uta] [-w WEIGHTS] [-r] [-st]
+                [--world-size WORLD_SIZE] [--dist-url DIST_URL] [-we] [-wd] [--sync-bn] [--amp] [--patience PATIENCE] [--optimizer {adam,sgd}] [--momentum MOMENTUM]
+                [--weight-decay WEIGHT_DECAY] [-ca] [--seed SEED] [--project-dir PROJECT_DIR]
+
+options:
+  -h, --help            show this help message and exit
+  -m {fasterrcnn_resnet50_fpn,fasterrcnn_mobilenetv3_large_fpn,fasterrcnn_mobilenetv3_large_320_fpn,fasterrcnn_convnext_tiny,fasterrcnn_convnext_small,fasterrcnn_custom_resnet,fasterrcnn_darknet,fasterrcnn_efficientnet_b0,fasterrcnn_mbv3_small_nano_head,fasterrcnn_mini_darknet,fasterrcnn_mini_darknet_nano_head,fasterrcnn_squeezenet1_0,fasterrcnn_squeezenet1_1,fasterrcnn_mini_squeezenet1_1_small_head,fasterrcnn_mini_squeezenet1_1_tiny_head,fasterrcnn_mobilevit_xxs,fasterrcnn_nano,fasterrcnn_squeezenet1_1_small_head,fasterrcnn_resnet18,fasterrcnn_resnet50_fpn_v2,fasterrcnn_resnet101,fasterrcnn_resnet152,fasterrcnn_vitdet,fasterrcnn_vitdet_tiny,fasterrcnn_regnet_y_400mf,fasterrcnn_vgg16,fcos_mobilinet_v2,retinanet_resnet50,retinanet_mobilenet_v2,ssd_vgg16}, --model {fasterrcnn_resnet50_fpn,fasterrcnn_mobilenetv3_large_fpn,fasterrcnn_mobilenetv3_large_320_fpn,fasterrcnn_convnext_tiny,fasterrcnn_convnext_small,fasterrcnn_custom_resnet,fasterrcnn_darknet,fasterrcnn_efficientnet_b0,fasterrcnn_mbv3_small_nano_head,fasterrcnn_mini_darknet,fasterrcnn_mini_darknet_nano_head,fasterrcnn_squeezenet1_0,fasterrcnn_squeezenet1_1,fasterrcnn_mini_squeezenet1_1_small_head,fasterrcnn_mini_squeezenet1_1_tiny_head,fasterrcnn_mobilevit_xxs,fasterrcnn_nano,fasterrcnn_squeezenet1_1_small_head,fasterrcnn_resnet18,fasterrcnn_resnet50_fpn_v2,fasterrcnn_resnet101,fasterrcnn_resnet152,fasterrcnn_vitdet,fasterrcnn_vitdet_tiny,fasterrcnn_regnet_y_400mf,fasterrcnn_vgg16,fcos_mobilinet_v2,retinanet_resnet50,retinanet_mobilenet_v2,ssd_vgg16}
+                        name of the model
+  --config CONFIG       path to the data config file
+  -d DEVICE, --device DEVICE
+                        computation/training device, default is GPU if GPU present
+  -e EPOCHS, --epochs EPOCHS
+                        number of epochs to train for
+  -j WORKERS, --workers WORKERS
+                        number of workers for data processing/transforms/augmentations
+  -b BATCH, --batch BATCH
+                        batch size to load the data
+  --lr LR               learning rate for the optimizer
+  -ims IMGSZ, --imgsz IMGSZ
+                        image size to feed to the network
+  -n NAME, --name NAME  training result dir name in outputs/training/, (default res_#)
+  -vt, --vis-transformed
+                        visualize transformed images fed to the network
+  --mosaic MOSAIC       probability of applying mosaic, (default, always apply)
+  -uta, --use-train-aug
+                        whether to use train augmentation, blur, gray, brightness contrast, color jitter, random gamma all at once
+  -w WEIGHTS, --weights WEIGHTS
+                        path to model weights if using pretrained weights
+  -r, --resume-training
+                        whether to resume training, if true, loads previous training plots and epochs and also loads the optimizer state dictionary
+  -st, --square-training
+                        Resize images to square shape instead of aspect ratio resizing for single image training. For mosaic training, this resizes single images to square shape
+                        first then puts them on a square canvas.
+  --world-size WORLD_SIZE
+                        number of distributed processes
+  --dist-url DIST_URL   url used to set up the distributed training
+  -we, --enable-wandb   use wandb
+  -wd, --disable-wandb  do not use wandb
+  --sync-bn             use sync batch norm
+  --amp                 use automatic mixed precision
+  --patience PATIENCE   number of epochs to wait for when mAP does not increase to trigger early stopping
+  --optimizer {adam,sgd}
+                        type of optimizer
+  --momentum MOMENTUM   optimizer momentum
+  --weight-decay WEIGHT_DECAY
+                        optimizer weight decay (L2 penalty)
+  -ca, --cosine-annealing
+                        use cosine annealing warm restarts
+  --seed SEED           global seed for training
+  --project-dir PROJECT_DIR
+                        save resutls to custom dir instead of `outputs` directory, --project-dir will be named if not already present
+```
+
+For more up-to-date list, call `python3 train.py -h`.
 
 
 
@@ -331,7 +391,7 @@ python inference_video.py
 ### Video Inference in Custom Trained Model
 
 ```bash
-python inference_video.py --input data/inference_data/video_1.mp4 --weights outputs/training/smoke_training/last_model_state.pth 
+python inference_video.py --input data/inference_data/video_1.mp4 --weights outputs/training/smoke_training/last_model_state.pth
 ```
 
 ### Tracking using COCO Pretrained Models
