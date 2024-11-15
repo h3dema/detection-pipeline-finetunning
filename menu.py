@@ -152,6 +152,26 @@ def parse_opt(default_config=None):
         type=int
     )
     parser.add_argument(
+        '--optimizer',
+        default="adam",
+        choices=["adam", "sgd"],
+        help='type of optimizer',
+        type=str,
+    )
+    parser.add_argument(
+        '--momentum',
+        default=0.9,
+        help='optimizer momentum',
+        type=float,
+    )    
+    parser.add_argument(
+        '--weight-decay',
+        default=0,
+        help='optimizer weight decay (L2 penalty)',
+        type=float,
+    )    
+    
+    parser.add_argument(
         '--seed',
         default=0,
         type=int,
