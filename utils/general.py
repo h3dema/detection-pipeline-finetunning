@@ -489,10 +489,11 @@ class EarlyStopping():
     Early stopping to stop the training when the mAP does not improve after
     certain epochs.
     """
+    
     def __init__(self, patience=10, min_delta=0):
         """
         :param patience: how many epochs to wait before stopping mAP
-                is not improving
+                is not improving. if negative, deactivate early stopping
         :param min_delta: minimum difference between new mAP and old mAP for
                new mAP to be considered as an improvement
         """
@@ -512,6 +513,9 @@ class EarlyStopping():
         Returns:
             None
         """
+        if self.patience < 0:
+            # early stop is not active
+            return
         if self.best_map == None:
             self.best_map = map
         elif map - self.best_map > self.min_delta:
