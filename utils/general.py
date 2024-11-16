@@ -492,7 +492,7 @@ class EarlyStopping():
     def __init__(self, patience=10, min_delta=0):
         """
         :param patience: how many epochs to wait before stopping mAP
-                is not improving
+                is not improving. If negative, deactivates the early stopping
         :param min_delta: minimum difference between new mAP and old mAP for
                new mAP to be considered as an improvement
         """
@@ -512,6 +512,9 @@ class EarlyStopping():
         Returns:
             None
         """
+        if self.patience < 0:
+            # don't not test for early stopping
+            return
         if self.best_map == None:
             self.best_map = map
         elif map - self.best_map > self.min_delta:
