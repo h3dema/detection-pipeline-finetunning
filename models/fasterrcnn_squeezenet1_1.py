@@ -48,6 +48,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 
 if __name__ == '__main__':
     from models.model_summary import summary
+    from models.flops import get_operations
     model = create_model(81, pretrained=True)
     summary(model)
-
+    print(get_operations(model))
