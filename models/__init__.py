@@ -55,4 +55,5 @@ __all__ = [
     'retinanet_resnet50',
     'retinanet_mobilenet_v2',
     'ssd_vgg16',
+    'ssd_resnet50',
 ]
