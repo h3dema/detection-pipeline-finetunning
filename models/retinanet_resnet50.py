@@ -10,6 +10,8 @@ from torch import nn
 from torchvision.models.detection import RetinaNet
 from torchvision.models.detection.rpn import AnchorGenerator
 
+from models.backbones.resnet50 import ResNet50
+
 
 def create_model(num_classes, pretrained=True, coco_model=False, v2: bool = True):
     """
@@ -26,33 +28,12 @@ def create_model(num_classes, pretrained=True, coco_model=False, v2: bool = True
         with specified RPN anchor generator.
     """
 
-    # Load the pretrained ResNet50 backbone.
-    model_backbone = torchvision.models.resnet50(
-        torchvision.models.ResNet50_Weights.IMAGENET1K_V2 if v2 else torchvision.models.ResNet50_Weights.IMAGENET1K_V1
-    )
+    # # Load the pretrained ResNet50 backbone.
+    backbone = ResNet50(v2)
 
-    conv1 = model_backbone.conv1
-    bn1 = model_backbone.bn1
-    relu = model_backbone.relu
-    max_pool = model_backbone.maxpool
-    layer1 = model_backbone.layer1
-    layer2 = model_backbone.layer2
-    layer3 = model_backbone.layer3
-    layer4 = model_backbone.layer4
-    backbone = nn.Sequential(
-        conv1,
-        bn1,
-        relu,
-        max_pool,
-        layer1,
-        layer2,
-        layer3,
-        layer4
-    )
-
-    # We need the output channels of the last convolutional layers RetinaNet model.
-    # It is 2048 for ResNet50.
-    backbone.out_channels = backbone[-1][2].conv3.out_channels
+    # # We need the output channels of the last convolutional layers RetinaNet model.
+    # # It is 2048 for ResNet50.
+    backbone.out_channels = backbone.get_out_channels()
 
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
     # Meaning, anchors with 5 different sizes and 3 different aspect
