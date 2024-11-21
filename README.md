@@ -316,9 +316,9 @@ options:
   --sync-bn             use sync batch norm
   --amp                 use automatic mixed precision
   --patience PATIENCE   number of epochs to wait for when mAP does not increase to trigger early stopping
-  --optimizer {adam,sgd}
+  --optimizer {adam,adamw,adamax,nadam,sgd}
                         type of optimizer
-  --momentum MOMENTUM   optimizer momentum
+  --momentum MOMENTUM   optimizer momentum or beta1 in case of Adam opt
   --weight-decay WEIGHT_DECAY
                         optimizer weight decay (L2 penalty)
   -ca, --cosine-annealing

@@ -159,14 +159,14 @@ def parse_opt(default_config=None):
     parser.add_argument(
         '--optimizer',
         default="adam",
-        choices=["adam", "sgd"],
+        choices=["adam", "adamw", "adamax", "nadam", "sgd"],
         help='type of optimizer',
         type=str,
     )
     parser.add_argument(
         '--momentum',
         default=0.9,
-        help='optimizer momentum',
+        help='optimizer momentum or beta1 if optimizer is Adam',
         type=float,
     )    
     parser.add_argument(
@@ -214,7 +214,7 @@ def parse_opt(default_config=None):
         '--project-dir',
         dest='project_dir',
         default=None,
-        help='save resutls to custom dir instead of `outputs` directory, \
+        help='save results to custom dir instead of `outputs` directory, \
               --project-dir will be named if not already present',
         type=str
     )

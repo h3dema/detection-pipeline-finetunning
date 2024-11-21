@@ -1,7 +1,5 @@
 """
-Faster RCNN model with the EfficientNetB0 backbone.
-
-Reference: https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
+Faster RCNN model with the EfficientNetB7 backbone.
 """
 import torchvision
 
@@ -11,9 +9,9 @@ from torchvision.models.detection.rpn import AnchorGenerator  # type: ignore
 from models.backbones.efficientnet import EfficientnetBackbone
 
 
-def create_model(num_classes=81, pretrained=True, coco_model=False):
+def create_model(num_classes, pretrained=True, coco_model=False):
     """
-    Create a Faster RCNN model with the EfficientNetB0 backbone.
+    Create a Faster RCNN model with the EfficientNetB7 backbone.
 
     Args:
         num_classes: The number of classes to detect.
@@ -23,9 +21,9 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
     Returns:
         A Faster RCNN model with the EfficientNetB4 backbone.
     """
-    # Load the pretrained EfficientNetB0 large features.
-    backbone = EfficientnetBackbone("b0")
-    
+    # Load the pretrained EfficientNetB7 large features.
+    backbone = EfficientnetBackbone("b7")
+
     # Generate anchors using the RPN. Here, we are using 5x3 anchors.
     # Meaning, anchors with 5 different sizes and 3 different aspect
     # ratios.
@@ -59,7 +57,7 @@ def create_model(num_classes=81, pretrained=True, coco_model=False):
 # -------
 #
 # cd detection_pipeline_finetunning
-# python3 -m models.fasterrcnn_efficientnet_b0
+# python3 -m models.fasterrcnn_efficientnet_b4
 #
 if __name__ == '__main__':
     from models.model_summary import summary

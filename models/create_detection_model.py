@@ -10,6 +10,13 @@ create_model = {
     'fasterrcnn_custom_resnet': fasterrcnn_custom_resnet.create_model,  # type: ignore
     'fasterrcnn_darknet': fasterrcnn_darknet.create_model,  # type: ignore
     'fasterrcnn_efficientnet_b0': fasterrcnn_efficientnet_b0.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b1': fasterrcnn_efficientnet_b1.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b2': fasterrcnn_efficientnet_b2.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b3': fasterrcnn_efficientnet_b3.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b4': fasterrcnn_efficientnet_b4.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b5': fasterrcnn_efficientnet_b5.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b6': fasterrcnn_efficientnet_b6.create_model,  # type: ignore
+    'fasterrcnn_efficientnet_b7': fasterrcnn_efficientnet_b7.create_model,  # type: ignore
     'fasterrcnn_mbv3_small_nano_head': fasterrcnn_mbv3_small_nano_head.create_model,  # type: ignore
     'fasterrcnn_mini_darknet': fasterrcnn_mini_darknet.create_model,  # type: ignore
     'fasterrcnn_mini_darknet_nano_head': fasterrcnn_mini_darknet_nano_head.create_model,  # type: ignore
@@ -32,6 +39,7 @@ create_model = {
     'retinanet_resnet50': retinanet_resnet50.create_model,  # type: ignone
     'retinanet_mobilenet_v2': retinanet_mobilenet_v2.create_model,  # type: ignone
     'ssd_vgg16': ssd_vgg16.create_model,  # type: ignore
+    'ssd_resnet50': ssd_resnet50.create_model,  # type: ignore
 }
 
 

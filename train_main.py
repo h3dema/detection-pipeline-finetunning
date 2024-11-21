@@ -217,18 +217,41 @@ def train_main(args, dataset_handler):
     print(f"{total_trainable_params:,} training parameters.")
     # Get the model parameters.
     params = [p for p in model.parameters() if p.requires_grad]
+
     # Define the optimizer.
     optimizer_name = args.get("optimizer", "adam")
     momentum=args.get("momentum", 0.9)
     weight_decay=args.get("weight_decay", 0)
     if optimizer_name == "adam":
-        optimizer = torch.optim.Adam(params, lr=args['lr'], weight_decay=weight_decay, betas=(0.9, 0.999), amsgrad=args.get("amsgrad", False))
+        optimizer = torch.optim.Adam(params, lr=args['lr'], 
+                                     betas=(momentum, 0.999), 
+                                     weight_decay=weight_decay, 
+                                     amsgrad=args.get("amsgrad", False))
+        
+    elif optimizer_name == "adamw":
+        optimizer = torch.optim.AdamW(params, lr=args['lr'], 
+                                      betas=(momentum, 0.999), 
+                                      weight_decay=weight_decay, 
+                                      amsgrad=args.get("amsgrad", False))
+        
+    elif optimizer_name == "adamax":
+        optimizer = torch.optim.Adamax(params, lr=args['lr'], 
+                                       betas=(momentum, 0.999), 
+                                       weight_decay=weight_decay, 
+                                       amsgrad=args.get("amsgrad", False))
+
     elif optimizer_name == "nadam":
-        optimizer = torch.optim.NAdam(params, lr=args['lr'], weight_decay=weight_decay, betas=(0.9, 0.999), momentum_decay=args.get("momentum_decay", 0.004))
+        optimizer = torch.optim.NAdam(params, lr=args['lr'], 
+                                      betas=(momentum, 0.999), 
+                                      weight_decay=weight_decay, 
+                                      momentum_decay=args.get("momentum_decay", 0.004))
+        
     elif optimizer_name == "sgd":
         optimizer = torch.optim.SGD(params, lr=args['lr'], momentum=momentum, nesterov=True)
+        
     else:
         raise NotImplementedError(f"{optimizer_name} is not implemented")
+        
     # optimizer = torch.optim.AdamW(params, lr=0.0001, weight_decay=0.0005)
     if args['resume_training']:
         # LOAD THE OPTIMIZER STATE DICTIONARY FROM THE CHECKPOINT.
@@ -256,7 +279,7 @@ def train_main(args, dataset_handler):
 
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=args.get('step_lr', NUM_EPOCHS // 4),
+            step_size=args.get('step_size', NUM_EPOCHS // 4),
             gamma=0.1 if args.get('step_gamma') is None else args.get('step_gamma'),
             verbose=False,
         )
