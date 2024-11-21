@@ -24,6 +24,8 @@ except:
 
 def create_model(num_classes, pretrained=True, coco_model=False):
     # Load the backbone.
+    # Notice that mobilevit_xxs() loads the weights directly to the GPU
+    # if your computer does not have one, it raises an error here!
     model_backbone = mobilevit_xxs(pretrained=pretrained)
 
     backbone = nn.Sequential(*list(model_backbone.children())[:-1])

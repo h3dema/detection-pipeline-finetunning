@@ -52,6 +52,7 @@ create_model = {
 if __name__ == "__main__":
     import argparse
     import torch
+    from models.model_summary import summary
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -63,14 +64,20 @@ if __name__ == "__main__":
 
 
     for model_name in create_model.keys():
+        if not torch.cuda.is_available() and model_name in ["fasterrcnn_mobilevit_xxs"]:
+            # skip because it raises
+            # untimeError: Attempting to deserialize object on a CUDA device
+            continue
         build_model = create_model[model_name]
         model = build_model(num_classes=20)
         model.eval().to("cpu")
         x = torch.rand((1, 3, 800, 800))  # batch with 5 elements
         y = model(x)
+        print("="* 80)
         print("Model name:", model_name)
         print("Input:", x.shape)
         if args.show_model:
-            print(model)
+            # print(model)
+            summary(model)
         print("Output:", len(y), "elements ->", y[0].keys())  #
         print()
